@@ -14,33 +14,35 @@ func init() {
 }
 
 func main() {
-	startDatabase()
-	defer startService()
+	db := *startDatabase()
+	defer startService(db)
 }
 
 // startDatabase establishes our database connection & migrations
-func startDatabase() {
+func startDatabase() *postgres.Client {
 	client, err := postgres.NewClient(config.DatabaseConfig)
 	if err != nil {
 		log.Fatal("failed to connect to database: %w", err)
 	}
 
+	// run our migrations
 	defer func(client *postgres.Client) {
 		err := client.CreateTables()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}(client)
+	return client
 }
 
 // startService begins serving our resources
-func startService() {
+func startService(client postgres.Client) {
 	router := gin.Default()
-	router.GET("/products", controllers.GetProducts)
-	router.GET("/products/:guid", controllers.GetProduct)
-	router.POST("/products", controllers.PostProduct)
-	router.DELETE("/products/:guid", controllers.DeleteProduct)
-	router.PUT("/product/:guid", controllers.PutProduct)
+	router.GET("/products", controllers.GetProducts(&client))
+	router.GET("/products/:guid", controllers.GetProduct(&client))
+	router.POST("/product", controllers.PostProduct(&client))
+	router.DELETE("/products/:guid", controllers.DeleteProduct(&client))
+	router.PUT("/product/:guid", controllers.PutProduct(&client))
 
 	log.Fatal(router.Run(config.Domain))
 }

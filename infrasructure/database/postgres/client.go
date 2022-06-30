@@ -4,7 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"github.com/qustavo/dotsql"
+	"github.com/rocketlaunchr/dbq/v2"
+	"log"
+	"time"
 )
 
 // DBConfig is our database configuration for establishing our connection
@@ -18,10 +22,36 @@ type DBConfig struct {
 	SSLMode string `binding:"required"`
 }
 
+// productModel defines our model
+type productModel struct {
+	Name        string
+	Price       int
+	Description string
+	CreatedAt   string
+	UpdatedAt   string
+}
+
+// productQuery defines our model for communicating with our database
+type productQueryModel struct {
+	ID          string `dbq:"id"`
+	GUID        string `dbq:"guid"`
+	Name        string `dbq:"name"`
+	Price       string `dbq:"price"`
+	Description string `dbq:"description"`
+	CreatedAt   string `dbq:"created_at"`
+	UpdatedAt   string `dbq:"updated_at"`
+}
+
+// opts defines our dbq operations
+var opts = &dbq.Options{ConcreteStruct: productQueryModel{}}
+
 // Client is our connection instance
 type Client struct {
 	database *sql.DB
 }
+
+var dt = time.Now()                       // FIXME: temporary for debugging
+var timeExample = dt.Format("01-02-2022") // FIXME: temporary for debugging
 
 // NewClient creates a Client instance for us with values provided through a DBConfig
 func NewClient(c DBConfig) (*Client, error) {
@@ -36,28 +66,51 @@ func NewClient(c DBConfig) (*Client, error) {
 	return &Client{db}, nil
 }
 
+type Row struct {
+	ID          string
+	GUID        string
+	Name        string
+	Price       string
+	Description string
+	CreatedAt   string
+	UpdatedAt   string
+}
+b
 // Insert inserts a new row into our database
-func (c *Client) Insert(ctx *gin.Context, data interface{}) (interface{}, error) {
-	// TODO: implement SQL
+// FIXME re-add "data interface{}" in parameter
+func (c *Client) Insert(ctx *gin.Context) (interface{}, error) {
+	stmt := fmt.Sprintf(
+		"INSERT INTO products(name, price, description, created_at, updated_at) VALUES(%s, %s, %s, %s, %s, %s, %s)",
+		"id", "guid", "name", "price", "description", "created_at", "updated_at",
+	)
+
+	res, err := dbq.Q(ctx, c.database, stmt, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Insert Result == ", res)
 	return nil, nil
 }
 
 // UpdateById updates a pre-existing row by ID
 func (c *Client) UpdateById(ctx *gin.Context, id, username, password, job string) error {
-	// TODO: implement SQL
 	return nil
 }
 
 // FindById finds a user by their id
 func (c *Client) FindById(ctx *gin.Context, id string) (*sql.Row, error) {
-	// TODO: implement SQL
-	// TODO: Convert sql.Row to model object
+
 	return nil, nil
 }
 
 // FindAll returns all rows of users
 func (c *Client) FindAll(ctx *gin.Context) (*sql.Rows, error) {
-	// TODO: implement SQL
+	res, err := dbq.Q(ctx, c.database, "SELECT * FROM products", opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all products from database: %w", err)
+	}
+	fmt.Println("results == ", res)
 	return nil, nil
 }
 
