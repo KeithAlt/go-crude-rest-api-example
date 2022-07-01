@@ -3,6 +3,8 @@ This repository is intended to serve as an example for the curious minded of how
 The end-product goal of this repository is to serve as a design example capable of enterprise-level enviornments.
 
 This API is a **work in progress** & I will be adding the following features below as I'm able:
+- [ ] Fully flushed out project structure
+- [ ] Polished & tested service/routes 
 - [ ] envvar for secret management
 - [ ] Hashicorp Vault for secret management
 - [ ] LetsEncrypt for SSL
