@@ -11,7 +11,7 @@ This API is a **work in progress** & I will be adding the following features bel
 - [ ] Kafka for events messaging
 - [ ] Swagger for docs
 
-Dependencies & Tools used:
+# Dependencies & Tools used:
 - https://github.com/gin-gonic/gin
 - https://github.com/google/uuid
 - https://github.com/lib/pq
