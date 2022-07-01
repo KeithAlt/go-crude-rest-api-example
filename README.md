@@ -10,3 +10,10 @@ This API is a **work in progress** & I will be adding the following features bel
 - [ ] Dependency injection
 - [ ] Kafka for events messaging
 - [ ] Swagger for docs
+
+Dependencies & Tools used:
+- https://github.com/gin-gonic/gin
+- https://github.com/google/uuid
+- github.com/lib/pq
+- github.com/qustavo/dotsql
+- github.com/rocketlaunchr/dbq/v2 
