@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/infrasructure/database/postgres"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/controllers"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/controllers/product"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/infrasructure/database/postgres"
 	"github.com/gin-gonic/gin"
 	"log"
 )
@@ -25,7 +25,7 @@ func startDatabase() *postgres.Client {
 		log.Fatal("failed to connect to database: %w", err)
 	}
 
-	// run our migrations
+	// run our harmless migrations
 	defer func(client *postgres.Client) {
 		err := client.CreateTables()
 		if err != nil {
@@ -38,11 +38,11 @@ func startDatabase() *postgres.Client {
 // startService begins serving our resources
 func startService(client postgres.Client) {
 	router := gin.Default()
-	router.GET("/products", controllers.GetProducts(&client))
-	router.GET("/products/:guid", controllers.GetProduct(&client))
-	router.POST("/product", controllers.PostProduct(&client))
-	router.DELETE("/products/:guid", controllers.DeleteProduct(&client))
-	router.PUT("/product/:guid", controllers.PutProduct(&client))
+	router.GET("/products", product.GetProducts(&client))
+	router.GET("/products/:guid", product.GetProduct(&client))
+	router.POST("/product", product.PostProduct(&client))
+	router.DELETE("/products/:guid", product.DeleteProduct(&client))
+	router.PUT("/product/:guid", product.PutProduct(&client))
 
 	log.Fatal(router.Run(config.Domain))
 }

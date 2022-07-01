@@ -2,13 +2,14 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models/product"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/qustavo/dotsql"
 	"github.com/rocketlaunchr/dbq/v2"
 	"log"
-	"time"
 )
 
 // DBConfig is our database configuration for establishing our connection
@@ -22,36 +23,13 @@ type DBConfig struct {
 	SSLMode string `binding:"required"`
 }
 
-// productModel defines our model
-type productModel struct {
-	Name        string
-	Price       int
-	Description string
-	CreatedAt   string
-	UpdatedAt   string
-}
-
-// productQuery defines our model for communicating with our database
-type productQueryModel struct {
-	ID          string `dbq:"id"`
-	GUID        string `dbq:"guid"`
-	Name        string `dbq:"name"`
-	Price       string `dbq:"price"`
-	Description string `dbq:"description"`
-	CreatedAt   string `dbq:"created_at"`
-	UpdatedAt   string `dbq:"updated_at"`
-}
-
 // opts defines our dbq operations
-var opts = &dbq.Options{ConcreteStruct: productQueryModel{}}
+var opts = &dbq.Options{ConcreteStruct: product.ModelJSON{}}
 
 // Client is our connection instance
 type Client struct {
 	database *sql.DB
 }
-
-var dt = time.Now()                       // FIXME: temporary for debugging
-var timeExample = dt.Format("01-02-2022") // FIXME: temporary for debugging
 
 // NewClient creates a Client instance for us with values provided through a DBConfig
 func NewClient(c DBConfig) (*Client, error) {
@@ -66,22 +44,14 @@ func NewClient(c DBConfig) (*Client, error) {
 	return &Client{db}, nil
 }
 
-type Row struct {
-	ID          string
-	GUID        string
-	Name        string
-	Price       string
-	Description string
-	CreatedAt   string
-	UpdatedAt   string
-}
-b
 // Insert inserts a new row into our database
 // FIXME re-add "data interface{}" in parameter
-func (c *Client) Insert(ctx *gin.Context) (interface{}, error) {
+func (c *Client) Insert(ctx *gin.Context, p product.ModelJSON) (interface{}, error) {
+	// TODO: add util.GetTime()
+	// FIXME: p.Price does not work as intended
 	stmt := fmt.Sprintf(
-		"INSERT INTO products(name, price, description, created_at, updated_at) VALUES(%s, %s, %s, %s, %s, %s, %s)",
-		"id", "guid", "name", "price", "description", "created_at", "updated_at",
+		"INSERT INTO products (name, price, description, created_at, updated_at) VALUES('%s', %f, '%s', '%s', '%s')",
+		p.Name, p.Price, p.Description, "2022-10-10", "2022-10-10",
 	)
 
 	res, err := dbq.Q(ctx, c.database, stmt, opts)
@@ -105,13 +75,23 @@ func (c *Client) FindById(ctx *gin.Context, id string) (*sql.Row, error) {
 }
 
 // FindAll returns all rows of users
-func (c *Client) FindAll(ctx *gin.Context) (*sql.Rows, error) {
-	res, err := dbq.Q(ctx, c.database, "SELECT * FROM products", opts)
+func (c *Client) FindAll(ctx *gin.Context) ([]*product.ModelJSON, error) {
+	res, err := dbq.Qs(ctx, c.database, "SELECT * FROM products", product.Model{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all products from database: %w", err)
 	}
-	fmt.Println("results == ", res)
-	return nil, nil
+
+	products, ok := res.([]*product.ModelJSON)
+	if !ok {
+		return nil, errors.New("failed to martial database find query results")
+	}
+
+	// FIXME debug check
+	for _, v := range products {
+		fmt.Println(*v)
+	}
+
+	return products, nil
 }
 
 // CreateTables will run 'create if not exist' statement migrations with use of dotsql

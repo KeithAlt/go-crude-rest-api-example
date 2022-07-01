@@ -1,7 +1,7 @@
-package controllers
+package product
 
 import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/infrasructure/database/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/infrasructure/database/postgres"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
