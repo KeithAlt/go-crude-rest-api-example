@@ -4,7 +4,7 @@ This repository is intended to serve as an example for the curious minded of how
 This API is a **work in progress** & I will be adding the following features below as I'm able:
 - [ ] envvar for secret management
 - [ ] Hashicorp Vault for secret management
-- [ ] LetsEncrypt for SSL management
+- [ ] LetsEncrypt for SSL
 - [ ] Dockerfiles for deployment
 - [ ] Makefile
 - [ ] Dependency injection
