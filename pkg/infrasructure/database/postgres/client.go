@@ -81,15 +81,17 @@ func (c *Client) FindAll(ctx *gin.Context) ([]*product.ModelJSON, error) {
 		return nil, fmt.Errorf("failed to get all products from database: %w", err)
 	}
 
-	products, ok := res.([]*product.ModelJSON)
+	products, ok := res.([]*product.ModelCollection) // <- FIXME failing
 	if !ok {
-		return nil, errors.New("failed to martial database find query results")
+		return nil, errors.New("failed to retrieve database query results")
 	}
 
-	// FIXME debug check
+	// XXX Remove in prod
 	for _, v := range products {
 		fmt.Println(*v)
 	}
+
+	products.
 
 	return products, nil
 }
