@@ -1,10 +1,12 @@
 package postgres
 
+// FIXME: use a faster postgres driver than pq
 import (
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models/product"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	"github.com/gin-gonic/gin"
 	uuid2 "github.com/google/uuid"
 	_ "github.com/lib/pq"
@@ -47,22 +49,24 @@ func NewClient(c DBConfig) (*Client, error) {
 // Insert inserts a new row into our database
 // FIXME re-add "data interface{}" in parameter
 func (c *Client) Insert(ctx *gin.Context, products ...product.Model) (interface{}, error) {
-	// FIXME: p.Price does not work as intended
+	// FIXME: p.Price not parsing correctly
 	var inserts []interface{}
 	for _, prod := range products {
-		inserts = append(inserts, prod)
-		fmt.Println("adding: ", prod) // DEBUG
+		prod.GUID = uuid2.NewString()
+		prod.CreatedAt = util.GetTime()
+		prod.UpdatedAt = util.GetTime()
+		inserts = append(inserts, dbq.Struct(prod))
 	}
 
-	fmt.Println("inserts == ", inserts)
-
-	stmt := dbq.INSERTStmt("products", []string{"name", "price", "description", "created_at", "updated_at"}, len(inserts))
-	res, err := dbq.E(ctx, c.database, stmt, nil, inserts)
+	// FIXME throws error
+	stmt := dbq.INSERTStmt("products", []string{"name", "price", "description", "created_at", "updated_at", "guid"}, len(inserts), 1)
+	res, err := dbq.E(ctx, c.database, stmt, opts, inserts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to insert products: %w", err)
+		panic(err) // FIXME improve error handling
+		return nil, nil
 	}
-	fmt.Println("res == ", res) // DEBUG
-	return res, nil
+	fmt.Println(res)
+	return nil, nil
 }
 
 // UpdateById updates a pre-existing row by ID
@@ -91,7 +95,7 @@ func (c *Client) FindAll(ctx *gin.Context) (*product.ModelCollection, error) {
 		return nil, fmt.Errorf("failed to get all products from database: %w", err)
 	}
 
-	collection := product.NewModelRepo()
+	collection := product.ModelCollection{}
 	products, ok := res.([]*product.Model)
 	if !ok {
 		return nil, errors.New("failed to retrieve database query results")
@@ -101,7 +105,7 @@ func (c *Client) FindAll(ctx *gin.Context) (*product.ModelCollection, error) {
 		collection.Repo = append(collection.Repo, *item)
 	}
 
-	return collection, nil
+	return &collection, nil
 }
 
 // CreateTables will run 'create if not exist' statement migrations with use of dotsql

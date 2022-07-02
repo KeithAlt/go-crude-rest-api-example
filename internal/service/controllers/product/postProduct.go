@@ -8,45 +8,30 @@ import (
 	"net/http"
 )
 
-// TODO add more require constraints for request
-type postJSON struct {
-	Name        string  `json:"name" binding:"required"`
-	Price       float32 `json:"price" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-}
-
-// ToModel returns a model object in model form
-func (m *postJSON) ToModel() *product.Model {
-	return &product.Model{
-		Name:        m.Name,
-		Price:       m.Price,
-		Description: m.Description,
-	}
-}
-
 // PostProduct returns all product
 func PostProduct(db *postgres.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var prod postJSON
-		if err := ctx.ShouldBindJSON(&prod); err != nil {
+		var jsonCollection product.ModelJSONCollection
+		if err := ctx.ShouldBindJSON(&jsonCollection.Repo); err != nil {
 			ctx.String(http.StatusBadRequest, "invalid request payload")
+			panic(err) // TODO better error handling
 			return
 		}
 
-		p := prod.ToModel()
-		fmt.Println(p.GUID) // <- why does this become 0
-		fmt.Println(p.ID)
-		fmt.Println(p.Name)
-		fmt.Println(p.Price)
-		fmt.Println(p.Description)
-		fmt.Println(p.UpdatedAt)
-		fmt.Println(p.CreatedAt)
-
-		// XXX FIXME - *prod.ToModel() adds an extra indices value of 0 that is the GUID being forced in
-		_, err := db.Insert(ctx, *prod.ToModel())
+		modelCollection, err := jsonCollection.ToModel()
+		if err != nil {
+			ctx.String(http.StatusInternalServerError, "the server failed to process your product JSON payload")
+			panic(err) // TODO better error handling
+			return
+		}
+		res, err := db.Insert(ctx, modelCollection.Repo...)
 		if err != nil {
 			ctx.String(http.StatusConflict, "the server failed to create your product")
+			panic(err) // TODO better error handling
+			return
 		}
+
+		fmt.Println(res) // FIXME debug
 
 		ctx.Status(http.StatusCreated)
 	}

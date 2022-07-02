@@ -7,9 +7,16 @@ type ModelCollection struct {
 	Repo []Model
 }
 
-// NewModelRepo constructs a new model repo
-func NewModelRepo() *ModelCollection {
-	return &ModelCollection{}
+// ToModel returns a collection of models in JSON form
+func (c *ModelJSONCollection) ToModel() (*ModelCollection, error) {
+	if len(c.Repo) == 0 {
+		return nil, errors.New("cannot convert empty collection into JSON")
+	}
+	var collection ModelCollection
+	for _, val := range c.Repo {
+		collection.Repo = append(collection.Repo, *val.ToModel())
+	}
+	return &collection, nil
 }
 
 // ModelJSONCollection defines a model collection in JSON form
