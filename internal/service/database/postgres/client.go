@@ -57,8 +57,7 @@ func (c *Client) Insert(ctx *gin.Context, products ...product.Model) (interface{
 		prod.UpdatedAt = util.GetTime()
 		inserts = append(inserts, dbq.Struct(prod))
 	}
-
-	// FIXME throws error
+	
 	stmt := dbq.INSERTStmt("products", []string{"name", "price", "description", "created_at", "updated_at", "guid"}, len(inserts), 1)
 	res, err := dbq.E(ctx, c.database, stmt, opts, inserts)
 	if err != nil {
