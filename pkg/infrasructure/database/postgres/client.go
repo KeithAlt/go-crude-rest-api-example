@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models/product"
 	"github.com/gin-gonic/gin"
+	uuid2 "github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/qustavo/dotsql"
 	"github.com/rocketlaunchr/dbq/v2"
-	"log"
 )
 
 // DBConfig is our database configuration for establishing our connection
@@ -24,7 +24,7 @@ type DBConfig struct {
 }
 
 // opts defines our dbq operations
-var opts = &dbq.Options{ConcreteStruct: product.ModelJSON{}}
+var opts = &dbq.Options{ConcreteStruct: product.Model{}}
 
 // Client is our connection instance
 type Client struct {
@@ -46,21 +46,23 @@ func NewClient(c DBConfig) (*Client, error) {
 
 // Insert inserts a new row into our database
 // FIXME re-add "data interface{}" in parameter
-func (c *Client) Insert(ctx *gin.Context, p product.ModelJSON) (interface{}, error) {
-	// TODO: add util.GetTime()
+func (c *Client) Insert(ctx *gin.Context, products ...product.Model) (interface{}, error) {
 	// FIXME: p.Price does not work as intended
-	stmt := fmt.Sprintf(
-		"INSERT INTO products (name, price, description, created_at, updated_at) VALUES('%s', %f, '%s', '%s', '%s')",
-		p.Name, p.Price, p.Description, "2022-10-10", "2022-10-10",
-	)
-
-	res, err := dbq.Q(ctx, c.database, stmt, opts)
-	if err != nil {
-		log.Fatal(err)
+	var inserts []interface{}
+	for _, prod := range products {
+		inserts = append(inserts, prod)
+		fmt.Println("adding: ", prod) // DEBUG
 	}
 
-	fmt.Println("Insert Result == ", res)
-	return nil, nil
+	fmt.Println("inserts == ", inserts)
+
+	stmt := dbq.INSERTStmt("products", []string{"name", "price", "description", "created_at", "updated_at"}, len(inserts))
+	res, err := dbq.E(ctx, c.database, stmt, nil, inserts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to insert products: %w", err)
+	}
+	fmt.Println("res == ", res) // DEBUG
+	return res, nil
 }
 
 // UpdateById updates a pre-existing row by ID
@@ -68,32 +70,38 @@ func (c *Client) UpdateById(ctx *gin.Context, id, username, password, job string
 	return nil
 }
 
-// FindById finds a user by their id
-func (c *Client) FindById(ctx *gin.Context, id string) (*sql.Row, error) {
-
-	return nil, nil
+// FindById finds a product by their guid
+func (c *Client) FindById(ctx *gin.Context, id string) (*product.Model, error) {
+	uuid, err := uuid2.Parse(id) // ensures the id is never malicious
+	if err != nil {
+		return nil, errors.New("invalid product id parameter provided")
+	}
+	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	res, err := dbq.Qs(ctx, c.database, stmt, product.Model{}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve product with an id of %s from database", id)
+	}
+	return res.([]*product.Model)[0], nil
 }
 
 // FindAll returns all rows of users
-func (c *Client) FindAll(ctx *gin.Context) ([]*product.ModelJSON, error) {
+func (c *Client) FindAll(ctx *gin.Context) (*product.ModelCollection, error) {
 	res, err := dbq.Qs(ctx, c.database, "SELECT * FROM products", product.Model{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all products from database: %w", err)
 	}
 
-	products, ok := res.([]*product.ModelCollection) // <- FIXME failing
+	collection := product.NewModelRepo()
+	products, ok := res.([]*product.Model)
 	if !ok {
 		return nil, errors.New("failed to retrieve database query results")
 	}
 
-	// XXX Remove in prod
-	for _, v := range products {
-		fmt.Println(*v)
+	for _, item := range products {
+		collection.Repo = append(collection.Repo, *item)
 	}
 
-	products.
-
-	return products, nil
+	return collection, nil
 }
 
 // CreateTables will run 'create if not exist' statement migrations with use of dotsql

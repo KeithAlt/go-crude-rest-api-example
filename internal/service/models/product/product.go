@@ -14,34 +14,33 @@ type Model struct {
 // ToJSON returns a model object in JSON
 func (m *Model) ToJSON() *ModelJSON {
 	return &ModelJSON{
+		GUID:        m.GUID,
 		Name:        m.Name,
 		Price:       m.Price,
 		Description: m.Description,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
 	}
-}
-
-// ModelCollection defines a collection of models
-type ModelCollection struct {
-	Content []Model
-}
-
-// ToJSON returns a collection of models in JSON form
-func (c *ModelCollection) ToJSON() *ModelJSONCollection {
-	var jsonCol ModelJSONCollection
-	for _, val := range c.Content {
-		jsonCol.collection = append(jsonCol.collection, *val.ToJSON())
-	}
-	return &jsonCol
 }
 
 // ModelJSON defines our model in JSON form
 type ModelJSON struct {
+	GUID        string  `json:"guid"`
 	Name        string  `json:"name"`
 	Price       float32 `json:"price"`
 	Description string  `json:"description"`
+	CreatedAt   string  `json:"created_at"`
+	UpdatedAt   string  `json:"updated_at"`
 }
 
-// ModelJSONCollection defines a model collection in JSON form
-type ModelJSONCollection struct {
-	collection []ModelJSON
+// ToModel returns a model object in model form
+func (m *ModelJSON) ToModel() *Model {
+	return &Model{
+		GUID:        m.GUID,
+		Name:        m.Name,
+		Price:       m.Price,
+		Description: m.Description,
+		CreatedAt:   m.CreatedAt,
+		UpdatedAt:   m.UpdatedAt,
+	}
 }

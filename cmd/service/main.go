@@ -39,7 +39,7 @@ func startDatabase() *postgres.Client {
 func startService(client postgres.Client) {
 	router := gin.Default()
 	router.GET("/products", product.GetProducts(&client))
-	router.GET("/products/:guid", product.GetProduct(&client))
+	router.GET("/product/:guid", product.GetProduct(&client))
 	router.POST("/product", product.PostProduct(&client))
 	router.DELETE("/products/:guid", product.DeleteProduct(&client))
 	router.PUT("/product/:guid", product.PutProduct(&client))
