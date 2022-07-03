@@ -5,7 +5,7 @@ The end-product goal of this repository is to serve as a design example capable 
 This API is a **work in progress** & I will be adding the following features below as I'm able:
 - [ ] Fully flushed out project structure
 - [ ] Polished & tested service/routes 
-- [ ] envvar for env variables management
+- [ ] envvar for environment variables
 - [ ] Hashicorp Vault for secret management
 - [ ] LetsEncrypt for SSL
 - [ ] Dockerfiles for deployment

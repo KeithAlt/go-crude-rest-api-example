@@ -2,47 +2,45 @@ package main
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/controllers/product"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/infrasructure/database/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/api"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo/postgres"
 	"github.com/gin-gonic/gin"
 	"log"
 )
 
-// init sets up our service
-func init() {
-	config.Set()
-}
-
 func main() {
+	config.Set()
 	db := *startDatabase()
 	defer startService(db)
 }
 
-// startDatabase establishes our database connection & migrations
+// startDatabase establishes our repo connection & migrations
 func startDatabase() *postgres.Client {
-	client, err := postgres.NewClient(config.DatabaseConfig)
+	cl, err := postgres.NewClient(config.DatabaseConfig)
 	if err != nil {
-		log.Fatal("failed to connect to database: %w", err)
+		log.Fatal("failed to connect to repo: %w", err) // TODO improve error handling
 	}
 
 	// run our harmless migrations
 	defer func(client *postgres.Client) {
 		err := client.CreateTables()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(err) // TODO improve error handling
 		}
-	}(client)
-	return client
+	}(cl)
+	return cl
 }
 
 // startService begins serving our resources
 func startService(client postgres.Client) {
-	router := gin.Default()
-	router.GET("/products", product.GetProducts(&client))
-	router.GET("/product/:guid", product.GetProduct(&client))
-	router.POST("/product", product.PostProduct(&client))
-	router.DELETE("/products/:guid", product.DeleteProduct(&client))
-	router.PUT("/product/:guid", product.PutProduct(&client))
-
-	log.Fatal(router.Run(config.Domain))
+	svc, err := api.New(&client)
+	if err != nil {
+		log.Fatal(err) // TODO improve error handling
+	}
+	r := gin.Default()
+	r.GET("/products", svc.FindAll)
+	r.GET("/product/:guid", svc.Find)
+	r.POST("/product", svc.Create)
+	r.DELETE("/products/:guid", svc.Delete)
+	log.Fatal(r.Run(config.Domain)) // TODO improve error handling
 }
