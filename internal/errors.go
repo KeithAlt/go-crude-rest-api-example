@@ -4,9 +4,9 @@ import "fmt"
 
 // Error defines our custom error type
 type Error struct {
-	origin error
-	msg    string
-	code   ErrorCode
+	stacktrace error
+	msg        string
+	code       ErrorCode
 }
 
 // ErrorCode defines the types of error codes
@@ -19,17 +19,17 @@ const (
 )
 
 // WrapError wraps the error & throws up stack
-func WrapError(origin error, code ErrorCode, format string, a ...interface{}) error {
+func WrapError(stacktrace error, code ErrorCode, format string, a ...interface{}) error {
 	return &Error{
-		code:   code,
-		origin: origin,
-		msg:    fmt.Sprintf(format, a...),
+		code:       code,
+		stacktrace: stacktrace,
+		msg:        fmt.Sprintf(format, a...),
 	}
 }
 
 // UnwrapError unwraps our error
 func (e *Error) UnwrapError() error {
-	return e.origin
+	return e.stacktrace
 }
 
 // NewError creates a new error
@@ -39,8 +39,8 @@ func NewError(code ErrorCode, format string, a ...interface{}) error {
 
 // Error returns our error message
 func (e *Error) Error() string {
-	if e.origin != nil {
-		return fmt.Sprintf("%s: %v", e.msg, e.origin)
+	if e.stacktrace != nil {
+		return fmt.Sprintf("%s: %v", e.msg, e.stacktrace)
 	}
 	return e.msg
 }
