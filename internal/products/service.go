@@ -1,8 +1,8 @@
 package products
 
 import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/models"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -15,7 +15,7 @@ type Service struct {
 
 // Create creates a new product
 func (svc *Service) Create(ctx *gin.Context) {
-	var jsonCollection repo.ModelJSONCollection
+	var jsonCollection models.ModelJSONCollection
 	if err := ctx.ShouldBindJSON(&jsonCollection.Repo); err != nil {
 		ctx.String(http.StatusBadRequest, "invalid request payload")
 		log.Fatal(err) // TODO better error handling

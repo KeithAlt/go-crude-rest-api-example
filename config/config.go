@@ -2,7 +2,7 @@ package config
 
 import (
 	"flag"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
 )
 
 var (

@@ -1,4 +1,4 @@
-package products
+package models
 
 // ProductModel defines our default model state
 type ProductModel struct {

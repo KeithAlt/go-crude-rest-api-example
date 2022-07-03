@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,42 +17,42 @@ type ServiceManager interface {
 
 // Handler defines our products & methods
 type Handler struct {
-	svc *products.Service
+	Svc *products.Service
 }
 
 // New creates a new API service
 func New(c *postgres.Client) (*Handler, error) {
 	return &Handler{
-		svc: &products.Service{DB: c},
+		Svc: &products.Service{DB: c},
 	}, nil
 }
 
 // Create creates a new product
 func (h *Handler) Create(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
-	defer h.svc.Create(ctx)
+	defer h.Svc.Create(ctx)
 }
 
 // Update updates a product
 func (h *Handler) Update(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
-	defer h.svc.Find(ctx)
+	defer h.Svc.Update(ctx)
 }
 
 // Find returns a product by ID
 func (h *Handler) Find(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
-	defer h.svc.Find(ctx)
+	defer h.Svc.Find(ctx)
 }
 
 // FindAll returns all products
 func (h *Handler) FindAll(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
-	defer h.svc.FindAll(ctx)
+	defer h.Svc.FindAll(ctx)
 }
 
 // Delete deletes a product by ID
 func (h *Handler) Delete(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
-	defer h.svc.Delete(ctx)
+	defer h.Svc.Delete(ctx)
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/api"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/repo/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
 	"github.com/gin-gonic/gin"
 	"log"
 )

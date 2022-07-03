@@ -1,13 +1,12 @@
-package repo
+package models
 
 import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 )
 
 // ModelCollection defines a collection of models
 type ModelCollection struct {
-	Repo []products.ProductModel
+	Repo []ProductModel
 }
 
 // ToModel returns a collection of models in JSON form
@@ -24,7 +23,7 @@ func (c *ModelJSONCollection) ToModel() (*ModelCollection, error) {
 
 // ModelJSONCollection defines a model collection in JSON form
 type ModelJSONCollection struct {
-	Repo []products.ProductJSON
+	Repo []ProductJSON
 }
 
 // ToJSON returns a collection of models in JSON form
