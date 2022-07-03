@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models/product"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -57,12 +58,11 @@ func (c *Client) Insert(ctx *gin.Context, products ...product.Model) (interface{
 		prod.UpdatedAt = util.GetTime()
 		inserts = append(inserts, dbq.Struct(prod))
 	}
-	
+
 	stmt := dbq.INSERTStmt("products", []string{"name", "price", "description", "created_at", "updated_at", "guid"}, len(inserts), 1)
 	res, err := dbq.E(ctx, c.database, stmt, opts, inserts)
 	if err != nil {
-		panic(err) // FIXME improve error handling
-		return nil, nil
+		return nil, internal.WrapError(err, internal.ErrorStatusUnknown, err.Error(), err)
 	}
 	fmt.Println(res)
 	return nil, nil
@@ -97,7 +97,7 @@ func (c *Client) FindAll(ctx *gin.Context) (*product.ModelCollection, error) {
 	collection := product.ModelCollection{}
 	products, ok := res.([]*product.Model)
 	if !ok {
-		return nil, errors.New("failed to retrieve database query results")
+		return nil, internal.WrapError(err, internal.ErrorStatusUnknown, err.Error(), err)
 	}
 
 	for _, item := range products {
@@ -130,7 +130,7 @@ func (c *Client) CreateTables() error {
 func (c *Client) DropTables() error {
 	dot, err := dotsql.LoadFromFile("./database/migrations/create_tables.sql")
 	if err != nil {
-		return fmt.Errorf("failed to load sql scripts: %w", err)
+		return internal.WrapError(err, internal.ErrorStatusNotFound, err.Error(), err)
 	}
 
 	_, err = dot.Exec(c.database, "drop-uuid-extension")

@@ -1,6 +1,8 @@
 package product
 
-import "errors"
+import (
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
+)
 
 // ModelCollection defines a collection of models
 type ModelCollection struct {
@@ -10,7 +12,7 @@ type ModelCollection struct {
 // ToModel returns a collection of models in JSON form
 func (c *ModelJSONCollection) ToModel() (*ModelCollection, error) {
 	if len(c.Repo) == 0 {
-		return nil, errors.New("cannot convert empty collection into JSON")
+		return nil, internal.NewError(internal.ErrorStatusInvalidArgument, "cannot convert empty JSON collection", nil)
 	}
 	var collection ModelCollection
 	for _, val := range c.Repo {
@@ -27,7 +29,7 @@ type ModelJSONCollection struct {
 // ToJSON returns a collection of models in JSON form
 func (c *ModelCollection) ToJSON() (*ModelJSONCollection, error) {
 	if len(c.Repo) == 0 {
-		return nil, errors.New("cannot convert empty collection into JSON")
+		return nil, internal.NewError(internal.ErrorStatusInvalidArgument, "cannot convert empty model collection", nil)
 	}
 
 	var collection ModelJSONCollection

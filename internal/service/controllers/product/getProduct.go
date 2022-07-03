@@ -13,9 +13,8 @@ func GetProduct(db *postgres.Client) gin.HandlerFunc {
 		product, err := db.FindById(ctx, guid)
 		if err != nil {
 			ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
-			panic(err) // TODO improve error handling
 			return
 		}
-		ctx.JSON(http.StatusOK, product.ToJSON()) // FIXME this should not be JSON
+		ctx.JSON(http.StatusOK, product.ToJSON())
 	}
 }
