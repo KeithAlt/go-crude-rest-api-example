@@ -1,8 +1,8 @@
-package products
+package service
 
 import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/models"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/postgres"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -55,7 +55,7 @@ func (svc *Service) Find(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, product.ToJSON())
 }
 
-// FindAll returns all products
+// FindAll returns all service
 func (svc *Service) FindAll(ctx *gin.Context) {
 	modelCollection, err := svc.DB.FindAll(ctx)
 	if err != nil {
@@ -65,7 +65,7 @@ func (svc *Service) FindAll(ctx *gin.Context) {
 	}
 	jsonCollection, err := modelCollection.ToJSON()
 	if err != nil {
-		ctx.String(http.StatusExpectationFailed, "the server failed to find any products to return")
+		ctx.String(http.StatusExpectationFailed, "the server failed to find any service to return")
 		log.Fatal(err) // TODO improve error handling
 		return
 	}

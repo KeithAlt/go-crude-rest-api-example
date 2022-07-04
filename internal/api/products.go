@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/postgres"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,15 +15,15 @@ type ServiceManager interface {
 	Delete(ctx *gin.Context)
 }
 
-// Handler defines our products & methods
+// Handler defines our service & methods
 type Handler struct {
-	Svc *products.Service
+	Svc *service.Service
 }
 
 // New creates a new API service
 func New(c *postgres.Client) (*Handler, error) {
 	return &Handler{
-		Svc: &products.Service{DB: c},
+		Svc: &service.Service{DB: c},
 	}, nil
 }
 
@@ -45,7 +45,7 @@ func (h *Handler) Find(ctx *gin.Context) {
 	defer h.Svc.Find(ctx)
 }
 
-// FindAll returns all products
+// FindAll returns all service
 func (h *Handler) FindAll(ctx *gin.Context) {
 	// TODO implement pre-product service logic...
 	defer h.Svc.FindAll(ctx)

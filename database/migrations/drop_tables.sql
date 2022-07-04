@@ -1,4 +1,4 @@
--- name: drop-products-table
+-- name: drop-service-table
 DROP TABLE IF EXISTS products;
 
 -- name: drop-uuid-extension

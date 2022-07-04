@@ -4,7 +4,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/products/models"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	_ "github.com/lib/pq"
 	"github.com/qustavo/dotsql"
@@ -52,7 +52,7 @@ func (c *Client) CreateTables() error {
 		return fmt.Errorf("failed to execute create extension migration: %w", err)
 	}
 
-	_, err = dot.Exec(c.database, "create-products-table")
+	_, err = dot.Exec(c.database, "create-service-table")
 	if err != nil {
 		return fmt.Errorf("failed to execute create tables migration: %w", err)
 	}
@@ -71,7 +71,7 @@ func (c *Client) DropTables() error {
 		return fmt.Errorf("failed to execute drop extension migration: %w", err)
 	}
 
-	_, err = dot.Exec(c.database, "drop-products-table")
+	_, err = dot.Exec(c.database, "drop-service-table")
 	if err != nil {
 		return fmt.Errorf("failed to execute drop tables migration: %w", err)
 	}

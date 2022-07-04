@@ -1,7 +1,7 @@
 -- name: create-uuid-extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- name: create-products-table
+-- name: create-service-table
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL  PRIMARY KEY,
     guid UUID DEFAULT uuid_generate_v4(),
