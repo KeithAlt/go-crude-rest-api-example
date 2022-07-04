@@ -2,12 +2,12 @@ package config
 
 import (
 	"flag"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 )
 
 var (
 	Domain         string
-	DatabaseConfig postgres.DBConfig
+	DatabaseConfig repository.DBConfig
 )
 
 // Set configures our application
@@ -15,7 +15,7 @@ func Set() {
 	flag.StringVar(&Domain, "domain", "localhost:8080", "Define the domain for our service to be hosted on")
 
 	// TODO replace with envvar
-	DatabaseConfig = postgres.DBConfig{
+	DatabaseConfig = repository.DBConfig{
 		User:    "postgres",
 		Pass:    "postgres",
 		Host:    "localhost",

@@ -1,4 +1,4 @@
-package postgres
+package repository
 
 import (
 	"errors"
@@ -43,7 +43,7 @@ func (c *Client) Find(ctx *gin.Context, id string) (*models.ProductModel, error)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
-	stmt := fmt.Sprintf("SELECT * FROM service WHERE guid='%s' LIMIT 1;", uuid)
+	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
 	res, err := dbq.Qs(ctx, c.database, stmt, models.ProductModel{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
@@ -53,9 +53,9 @@ func (c *Client) Find(ctx *gin.Context, id string) (*models.ProductModel, error)
 
 // FindAll returns all rows of users
 func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
-	res, err := dbq.Qs(ctx, c.database, "SELECT * FROM service", models.ProductModel{}, nil)
+	res, err := dbq.Qs(ctx, c.database, "SELECT * FROM products", models.ProductModel{}, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all service from repo: %w", err)
+		return nil, fmt.Errorf("failed to get all products from repo: %w", err)
 	}
 
 	collection := models.ModelCollection{}
@@ -69,4 +69,18 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 	}
 
 	return &collection, nil
+}
+
+// Delete deletes a product by id
+func (c *Client) Delete(ctx *gin.Context, id string) (*models.ProductModel, error) {
+	uuid, err := uuid2.Parse(id) // ensures the id is never malicious
+	if err != nil {
+		return nil, errors.New("invalid product id parameter provided")
+	}
+	stmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	res, err := dbq.Qs(ctx, c.database, stmt, models.ProductModel{}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
+	}
+	return res.([]*models.ProductModel)[0], nil
 }

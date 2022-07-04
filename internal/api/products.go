@@ -2,28 +2,19 @@ package api
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 	"github.com/gin-gonic/gin"
 )
 
-// ServiceManager defines the global service operations
-type ServiceManager interface {
-	Create(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	Find(ctx *gin.Context)
-	FindAll(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
 // Handler defines our service & methods
 type Handler struct {
-	Svc *service.Service
+	Svc *service.ProductRepository
 }
 
 // New creates a new API service
-func New(c *postgres.Client) (*Handler, error) {
+func New(c *repository.Client) (*Handler, error) {
 	return &Handler{
-		Svc: &service.Service{DB: c},
+		Svc: &service.ProductRepository{DB: c},
 	}, nil
 }
 

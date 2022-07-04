@@ -1,6 +1,6 @@
-package postgres
+package repository
 
-// FIXME: use a faster postgres driver than pq
+// FIXME: use a faster repository driver than pq
 import (
 	"database/sql"
 	"fmt"
@@ -52,7 +52,7 @@ func (c *Client) CreateTables() error {
 		return fmt.Errorf("failed to execute create extension migration: %w", err)
 	}
 
-	_, err = dot.Exec(c.database, "create-service-table")
+	_, err = dot.Exec(c.database, "create-products-table")
 	if err != nil {
 		return fmt.Errorf("failed to execute create tables migration: %w", err)
 	}
@@ -71,7 +71,7 @@ func (c *Client) DropTables() error {
 		return fmt.Errorf("failed to execute drop extension migration: %w", err)
 	}
 
-	_, err = dot.Exec(c.database, "drop-service-table")
+	_, err = dot.Exec(c.database, "drop-products-table")
 	if err != nil {
 		return fmt.Errorf("failed to execute drop tables migration: %w", err)
 	}

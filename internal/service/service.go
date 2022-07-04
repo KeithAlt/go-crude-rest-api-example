@@ -2,19 +2,28 @@ package service
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/postgres"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 )
 
-// Service defines our product service
-type Service struct {
-	DB *postgres.Client
+// Service defines the global service operations
+type Service interface {
+	Create(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	Find(ctx *gin.Context)
+	FindAll(ctx *gin.Context)
+	Delete(ctx *gin.Context)
+}
+
+// ProductRepository defines our product service
+type ProductRepository struct {
+	DB *repository.Client
 }
 
 // Create creates a new product
-func (svc *Service) Create(ctx *gin.Context) {
+func (repo *ProductRepository) Create(ctx *gin.Context) {
 	var jsonCollection models.ModelJSONCollection
 	if err := ctx.ShouldBindJSON(&jsonCollection.Repo); err != nil {
 		ctx.String(http.StatusBadRequest, "invalid request payload")
@@ -28,7 +37,7 @@ func (svc *Service) Create(ctx *gin.Context) {
 		log.Fatal(err) // TODO better error handling
 		return
 	}
-	_, err = svc.DB.Create(ctx, modelCollection.Repo...)
+	_, err = repo.DB.Create(ctx, modelCollection.Repo...)
 	if err != nil {
 		ctx.String(http.StatusConflict, "the server failed to create your product")
 		log.Fatal(err) // TODO better error handling
@@ -39,15 +48,15 @@ func (svc *Service) Create(ctx *gin.Context) {
 }
 
 // Update updates a product
-func (svc *Service) Update(ctx *gin.Context) {
+func (repo *ProductRepository) Update(ctx *gin.Context) {
 	// FIXME implement ...
 	ctx.String(http.StatusOK, "update product")
 }
 
 // Find returns a product by ID
-func (svc *Service) Find(ctx *gin.Context) {
+func (repo *ProductRepository) Find(ctx *gin.Context) {
 	guid := ctx.Param("guid")
-	product, err := svc.DB.Find(ctx, guid)
+	product, err := repo.DB.Find(ctx, guid)
 	if err != nil {
 		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
 		return
@@ -56,8 +65,8 @@ func (svc *Service) Find(ctx *gin.Context) {
 }
 
 // FindAll returns all service
-func (svc *Service) FindAll(ctx *gin.Context) {
-	modelCollection, err := svc.DB.FindAll(ctx)
+func (repo *ProductRepository) FindAll(ctx *gin.Context) {
+	modelCollection, err := repo.DB.FindAll(ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, "an internal server error occurred with your request")
 		log.Fatal(err) // TODO improve error handling
@@ -74,7 +83,12 @@ func (svc *Service) FindAll(ctx *gin.Context) {
 }
 
 // Delete deletes a product by ID
-func (svc *Service) Delete(ctx *gin.Context) {
-	// TODO implement me ...
-	ctx.String(http.StatusOK, "deleted product")
+func (repo *ProductRepository) Delete(ctx *gin.Context) {
+	guid := ctx.Param("guid")
+	product, err := repo.DB.Delete(ctx, guid)
+	if err != nil {
+		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
+		return
+	}
+	ctx.JSON(http.StatusOK, product.ToJSON())
 }
