@@ -12,7 +12,7 @@ import (
 
 // Create inserts a new row into our repo
 // FIXME re-add "data interface{}" in parameter
-func (c *Client) Create(ctx *gin.Context, products ...models.ProductModel) (interface{}, error) {
+func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface{}, error) {
 	// FIXME: p.Price not parsing correctly
 	var inserts []interface{}
 	for _, prod := range products {
@@ -23,7 +23,7 @@ func (c *Client) Create(ctx *gin.Context, products ...models.ProductModel) (inte
 	}
 
 	stmt := dbq.INSERTStmt("service", []string{"name", "price", "description", "created_at", "updated_at", "guid"}, len(inserts), 1)
-	res, err := dbq.E(ctx, c.database, stmt, &c.options, inserts)
+	res, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
 	if err != nil {
 		return nil, util.WrapError(err, util.ErrorStatusUnknown, err.Error(), err)
 	}
@@ -38,28 +38,28 @@ func (c *Client) Update(ctx *gin.Context, id, username, password, job string) er
 }
 
 // Find finds a product by their guid
-func (c *Client) Find(ctx *gin.Context, id string) (*models.ProductModel, error) {
-	uuid, err := uuid2.Parse(id) // ensures the id is never malicious
+func (c *Client) Find(ctx *gin.Context, id string) (*models.Product, error) {
+	uuid, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
 	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
-	res, err := dbq.Qs(ctx, c.database, stmt, models.ProductModel{}, nil)
+	res, err := dbq.Qs(ctx, c.Database, stmt, models.Product{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
 	}
-	return res.([]*models.ProductModel)[0], nil
+	return res.([]*models.Product)[0], nil
 }
 
 // FindAll returns all rows of users
 func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
-	res, err := dbq.Qs(ctx, c.database, "SELECT * FROM products", models.ProductModel{}, nil)
+	res, err := dbq.Qs(ctx, c.Database, "SELECT * FROM products", models.Product{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all products from repo: %w", err)
 	}
 
 	collection := models.ModelCollection{}
-	prods, ok := res.([]*models.ProductModel)
+	prods, ok := res.([]*models.Product)
 	if !ok {
 		return nil, util.WrapError(err, util.ErrorStatusUnknown, err.Error(), err)
 	}
@@ -72,15 +72,15 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 }
 
 // Delete deletes a product by id
-func (c *Client) Delete(ctx *gin.Context, id string) (*models.ProductModel, error) {
-	uuid, err := uuid2.Parse(id) // ensures the id is never malicious
+func (c *Client) Delete(ctx *gin.Context, id string) error {
+	uuid, err := uuid2.Parse(id)
 	if err != nil {
-		return nil, errors.New("invalid product id parameter provided")
+		return errors.New("invalid product id parameter provided")
 	}
-	stmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s' LIMIT 1;", uuid)
-	res, err := dbq.Qs(ctx, c.database, stmt, models.ProductModel{}, nil)
+	stmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s';", uuid)
+	_, err = dbq.Qs(ctx, c.Database, stmt, models.Product{}, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
+		return fmt.Errorf("failed to retrieve product with an id of %s from repo: %w", id, err)
 	}
-	return res.([]*models.ProductModel)[0], nil
+	return nil
 }

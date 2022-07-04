@@ -6,7 +6,7 @@ import (
 
 // ModelCollection defines a collection of models
 type ModelCollection struct {
-	Repo []ProductModel
+	Repo []Product
 }
 
 // ToModel returns a collection of models in JSON form

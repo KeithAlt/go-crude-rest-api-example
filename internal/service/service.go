@@ -19,7 +19,7 @@ type Service interface {
 
 // ProductRepository defines our product service
 type ProductRepository struct {
-	DB *repository.Client
+	Postgres *repository.Client
 }
 
 // Create creates a new product
@@ -37,7 +37,7 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 		log.Fatal(err) // TODO better error handling
 		return
 	}
-	_, err = repo.DB.Create(ctx, modelCollection.Repo...)
+	_, err = repo.Postgres.Create(ctx, modelCollection.Repo...)
 	if err != nil {
 		ctx.String(http.StatusConflict, "the server failed to create your product")
 		log.Fatal(err) // TODO better error handling
@@ -56,7 +56,7 @@ func (repo *ProductRepository) Update(ctx *gin.Context) {
 // Find returns a product by ID
 func (repo *ProductRepository) Find(ctx *gin.Context) {
 	guid := ctx.Param("guid")
-	product, err := repo.DB.Find(ctx, guid)
+	product, err := repo.Postgres.Find(ctx, guid)
 	if err != nil {
 		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
 		return
@@ -66,7 +66,7 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 
 // FindAll returns all service
 func (repo *ProductRepository) FindAll(ctx *gin.Context) {
-	modelCollection, err := repo.DB.FindAll(ctx)
+	modelCollection, err := repo.Postgres.FindAll(ctx)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, "an internal server error occurred with your request")
 		log.Fatal(err) // TODO improve error handling
@@ -85,10 +85,10 @@ func (repo *ProductRepository) FindAll(ctx *gin.Context) {
 // Delete deletes a product by ID
 func (repo *ProductRepository) Delete(ctx *gin.Context) {
 	guid := ctx.Param("guid")
-	product, err := repo.DB.Delete(ctx, guid)
+	err := repo.Postgres.Delete(ctx, guid)
 	if err != nil {
 		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
 		return
 	}
-	ctx.JSON(http.StatusOK, product.ToJSON())
+	ctx.Status(http.StatusOK)
 }

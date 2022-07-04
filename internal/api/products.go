@@ -2,20 +2,12 @@ package api
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 	"github.com/gin-gonic/gin"
 )
 
 // Handler defines our service & methods
 type Handler struct {
 	Svc *service.ProductRepository
-}
-
-// New creates a new API service
-func New(c *repository.Client) (*Handler, error) {
-	return &Handler{
-		Svc: &service.ProductRepository{DB: c},
-	}, nil
 }
 
 // Create creates a new product
