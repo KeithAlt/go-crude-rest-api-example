@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 // Service defines the global service operations
@@ -49,8 +50,39 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 
 // Update updates a product
 func (repo *ProductRepository) Update(ctx *gin.Context) {
-	// FIXME implement ...
-	ctx.String(http.StatusOK, "update product")
+	guid := ctx.Param("guid")
+	var uProd models.ProductJSON
+	if err := ctx.ShouldBindJSON(&uProd); err != nil {
+		ctx.String(http.StatusBadRequest, "invalid product json payload")
+		log.Fatal(err) // TODO better error handling
+		return
+	}
+
+	curModel, err := repo.Postgres.Find(ctx, guid)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, "invalid product id")
+		log.Fatal(err) // TODO better error handling
+		return
+	}
+	// IDEA: Hijack last value in the shitty reflect algorithm & set it to type UUID in the interface map
+	// XXX This works but the reflection pkg is notoriously slow. We can do better!
+	curValue := reflect.ValueOf(*curModel)
+	uValue := reflect.ValueOf(uProd)
+	uModelValues := make([]interface{}, uValue.NumField())
+	for i := 0; i < curValue.NumField()-1; i++ {
+		if uValue.Field(i).Interface() == "" {
+			uModelValues[i] = curValue.Field(i).Interface()
+		} else {
+			uModelValues[i] = uValue.Field(i).Interface()
+		}
+	}
+
+	res, err := repo.Postgres.Update(ctx, guid, uModelValues)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, "an internal server error occurred")
+		log.Fatal(err) // TODO better error handling
+	}
+	ctx.JSON(http.StatusOK, res.ToJSON())
 }
 
 // Find returns a product by ID

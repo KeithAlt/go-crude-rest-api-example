@@ -13,17 +13,6 @@ import (
 	"log"
 )
 
-// DBConfig is our repo configuration for establishing our connection
-type DBConfig struct {
-	User    string `binding:"required"`
-	Pass    string `binding:"required"`
-	Host    string `binding:"required"`
-	Port    string `binding:"required"`
-	DbType  string `binding:"required"`
-	DbName  string `binding:"required"`
-	SSLMode string `binding:"required"`
-}
-
 // Client is our connection instance
 type Client struct {
 	Database *sql.DB
@@ -31,7 +20,7 @@ type Client struct {
 }
 
 // NewClient creates a Client instance for us with values provided through a DBConfig
-func NewClient(c DBConfig) (*Client, error) {
+func NewClient(c config.Database) (*Client, error) {
 	psqlInfo := fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
 		c.DbType, c.User, c.Pass, c.Host, c.Port, c.DbName, c.SSLMode,
 	)
@@ -44,7 +33,7 @@ func NewClient(c DBConfig) (*Client, error) {
 
 // Initialize establishes our repo connection & migrations
 func Initialize() *Client {
-	cl, err := NewClient(config.DatabaseConfig)
+	cl, err := NewClient(config.DBConfig)
 	if err != nil {
 		log.Fatal("failed to connect to repo: %w", err) // TODO improve error handling
 	}

@@ -11,12 +11,13 @@ import (
 // Serve begins serving our resources
 func Serve(cl *repository.Client) {
 	svc := &Handler{
-		Svc: &service.ProductRepository{Postgres: cl},
+		Repo: &service.ProductRepository{Postgres: cl},
 	}
 	r := gin.Default()
 	r.GET("/products", svc.FindAll)
-	r.GET("/products/:guid", svc.Find)
+	r.GET("/product/:guid", svc.Find)
 	r.POST("/products", svc.Create)
+	r.PUT("/product/:guid", svc.Update)
 	r.DELETE("/products/:guid", svc.Delete)
 	log.Fatal(r.Run(config.Domain)) // TODO improve error handling
 }

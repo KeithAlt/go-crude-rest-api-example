@@ -2,12 +2,22 @@ package config
 
 import (
 	"flag"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 )
 
+// Database is our repo configuration for establishing our connection
+type Database struct {
+	User    string `binding:"required"`
+	Pass    string `binding:"required"`
+	Host    string `binding:"required"`
+	Port    string `binding:"required"`
+	DbType  string `binding:"required"`
+	DbName  string `binding:"required"`
+	SSLMode string `binding:"required"`
+}
+
 var (
-	Domain         string
-	DatabaseConfig repository.DBConfig
+	Domain   string
+	DBConfig Database
 )
 
 // Set configures our application
@@ -15,7 +25,7 @@ func Set() {
 	flag.StringVar(&Domain, "domain", "localhost:8080", "Define the domain for our service to be hosted on")
 
 	// TODO replace with envvar
-	DatabaseConfig = repository.DBConfig{
+	DBConfig = Database{
 		User:    "postgres",
 		Pass:    "postgres",
 		Host:    "localhost",

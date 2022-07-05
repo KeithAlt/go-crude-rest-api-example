@@ -18,9 +18,9 @@ func (m *Product) ToJSON() *ProductJSON {
 
 // ProductJSON defines our model in JSON form
 type ProductJSON struct {
-	Name        string  `json:"name"`
-	Price       float32 `json:"price"`
-	Description string  `json:"description"`
+	Name        string  `json:"name,omitempty"`
+	Price       float32 `json:"price,omitempty"`
+	Description string  `json:"description,omitempty"`
 	CreatedAt   string  `json:"created_at"`
 	UpdatedAt   string  `json:"updated_at"`
 	GUID        string  `json:"guid"`

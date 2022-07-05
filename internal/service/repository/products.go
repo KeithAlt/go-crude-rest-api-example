@@ -8,7 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	uuid2 "github.com/google/uuid"
 	"github.com/rocketlaunchr/dbq/v2"
+	"github.com/rocketlaunchr/dbq/v2/x"
+	"log"
 )
+
+var fields = []string{"name", "price", "description", "created_at", "updated_at", "guid"}
 
 // Create inserts a new row into our repo
 // FIXME re-add "data interface{}" in parameter
@@ -22,7 +26,7 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 		inserts = append(inserts, dbq.Struct(prod))
 	}
 
-	stmt := dbq.INSERTStmt("service", []string{"name", "price", "description", "created_at", "updated_at", "guid"}, len(inserts), 1)
+	stmt := dbq.INSERTStmt("service", fields, len(inserts), dbq.PostgreSQL)
 	res, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
 	if err != nil {
 		return nil, util.WrapError(err, util.ErrorStatusUnknown, err.Error(), err)
@@ -32,9 +36,34 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id, username, password, job string) error {
-	// TODO implement ...
-	return nil
+func (c *Client) Update(ctx *gin.Context, id string, m []interface{}) (*models.Product, error) {
+	_, err := uuid2.Parse(id)
+	if err != nil {
+		return nil, errors.New("invalid product id parameter provided")
+	}
+
+	var fields = []string{"name", "price", "description", "created_at", "updated_at", "guid"}
+	// TODO: add param type for GUID to be string or uuid
+
+	// XXX this works but is unoptimized & smelly. We can do better!
+	opts := x.BulkUpdateOptions{
+		Table:      "products",
+		Columns:    fields,
+		PrimaryKey: "id",
+		DBType:     dbq.PostgreSQL,
+	}
+
+	var updateData = map[interface{}]interface{}{
+		1: m,
+	}
+
+	_, err = x.BulkUpdate(ctx, c.Database, updateData, opts)
+	if err != nil {
+		log.Fatal(err) // TODO better error handling
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 // Find finds a product by their guid
@@ -43,7 +72,7 @@ func (c *Client) Find(ctx *gin.Context, id string) (*models.Product, error) {
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
-	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid.String())
 	res, err := dbq.Qs(ctx, c.Database, stmt, models.Product{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
