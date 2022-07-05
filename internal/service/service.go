@@ -1,8 +1,10 @@
 package service
 
 import (
+	json2 "encoding/json"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/util"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -24,23 +26,31 @@ type ProductRepository struct {
 
 // Create creates a new product
 func (repo *ProductRepository) Create(ctx *gin.Context) {
-	var jsonCollection models.ModelJSONCollection
-	if err := ctx.ShouldBindJSON(&jsonCollection.Repo); err != nil {
-		ctx.String(http.StatusBadRequest, "invalid request payload")
+	json, err := util.SerializeJSONPayload(ctx)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
 		log.Fatal(err) // TODO better error handling
+		return
+	}
+
+	var jsonCollection models.ModelJSONCollection
+	err = json2.Unmarshal(json, &jsonCollection.Repo)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 
 	modelCollection, err := jsonCollection.ToModel()
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, "the server failed to process your product JSON payload")
-		log.Fatal(err) // TODO better error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 	_, err = repo.Postgres.Create(ctx, modelCollection.Repo...)
 	if err != nil {
-		ctx.String(http.StatusConflict, "the server failed to create your product")
-		log.Fatal(err) // TODO better error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 
@@ -50,24 +60,25 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 // Update updates a product
 func (repo *ProductRepository) Update(ctx *gin.Context) {
 	guid := ctx.Param("guid")
-	var uProd models.ProductJSON
-	if err := ctx.ShouldBindJSON(&uProd); err != nil {
-		ctx.String(http.StatusBadRequest, "invalid product json payload")
-		log.Fatal(err) // TODO better error handling
+	var newModelJSON models.ProductJSON
+	if err := ctx.ShouldBindJSON(&newModelJSON); err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 
 	curModel, err := repo.Postgres.Find(ctx, guid)
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "invalid product id")
-		log.Fatal(err) // TODO better error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 
-	res, err := repo.Postgres.Update(ctx, guid, *uProd.ToModel())
+	mergedIModel := util.MergeModelsIntoInterface(curModel, &newModelJSON)
+	res, err := repo.Postgres.Update(ctx, guid, mergedIModel)
 	if err != nil {
-		ctx.String(http.StatusBadRequest, "an internal server error occurred")
-		log.Fatal(err) // TODO better error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 	}
 	ctx.JSON(http.StatusOK, res.ToJSON())
 }
@@ -77,7 +88,8 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	product, err := repo.Postgres.Find(ctx, guid)
 	if err != nil {
-		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 	ctx.JSON(http.StatusOK, product.ToJSON())
@@ -87,14 +99,14 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 func (repo *ProductRepository) FindAll(ctx *gin.Context) {
 	modelCollection, err := repo.Postgres.FindAll(ctx)
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, "an internal server error occurred with your request")
-		log.Fatal(err) // TODO improve error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 	jsonCollection, err := modelCollection.ToJSON()
 	if err != nil {
-		ctx.String(http.StatusExpectationFailed, "the server failed to find any service to return")
-		log.Fatal(err) // TODO improve error handling
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 
@@ -106,7 +118,8 @@ func (repo *ProductRepository) Delete(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	err := repo.Postgres.Delete(ctx, guid)
 	if err != nil {
-		ctx.String(http.StatusNotFound, "failed to find a product by the provided id")
+		ctx.String(http.StatusInternalServerError, err.Error())
+		log.Fatal(err) // TODO integrate custom error types & handling
 		return
 	}
 	ctx.Status(http.StatusOK)

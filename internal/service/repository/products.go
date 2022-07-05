@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
+	util2 "github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	"github.com/gin-gonic/gin"
 	uuid2 "github.com/google/uuid"
 	"github.com/rocketlaunchr/dbq/v2"
@@ -19,22 +19,22 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 	var inserts []interface{}
 	for _, prod := range products {
 		prod.GUID = uuid2.NewString()
-		prod.CreatedAt = util.GetTime()
-		prod.UpdatedAt = util.GetTime()
+		prod.CreatedAt = util2.GetTime()
+		prod.UpdatedAt = util2.GetTime()
 		inserts = append(inserts, dbq.Struct(prod))
 	}
 
-	stmt := dbq.INSERTStmt("service", fields, len(inserts), dbq.PostgreSQL)
+	stmt := dbq.INSERTStmt("products", fields, len(inserts), dbq.PostgreSQL)
 	res, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
 	if err != nil {
-		return nil, util.WrapError(err, util.ErrorStatusUnknown, err.Error(), err)
+		return nil, util2.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
 	}
-	fmt.Println(res)
+	fmt.Println(res) // FIXME debug
 	return nil, nil
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id string, m models.Product) (*models.Product, error) {
+func (c *Client) Update(ctx *gin.Context, id string, m []interface{}) (*models.Product, error) {
 	_, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
@@ -69,7 +69,7 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 	collection := models.ModelCollection{}
 	prods, ok := res.([]*models.Product)
 	if !ok {
-		return nil, util.WrapError(err, util.ErrorStatusUnknown, err.Error(), err)
+		return nil, util2.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
 	}
 
 	for _, item := range prods {
