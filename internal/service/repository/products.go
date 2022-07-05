@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	uuid2 "github.com/google/uuid"
 	"github.com/rocketlaunchr/dbq/v2"
-	"github.com/rocketlaunchr/dbq/v2/x"
-	"log"
 )
 
 var fields = []string{"name", "price", "description", "created_at", "updated_at", "guid"}
@@ -36,32 +34,13 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id string, m []interface{}) (*models.Product, error) {
+func (c *Client) Update(ctx *gin.Context, id string, m models.Product) (*models.Product, error) {
 	_, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
 
-	var fields = []string{"name", "price", "description", "created_at", "updated_at", "guid"}
-	// TODO: add param type for GUID to be string or uuid
-
-	// XXX this works but is unoptimized & smelly. We can do better!
-	opts := x.BulkUpdateOptions{
-		Table:      "products",
-		Columns:    fields,
-		PrimaryKey: "id",
-		DBType:     dbq.PostgreSQL,
-	}
-
-	var updateData = map[interface{}]interface{}{
-		1: m,
-	}
-
-	_, err = x.BulkUpdate(ctx, c.Database, updateData, opts)
-	if err != nil {
-		log.Fatal(err) // TODO better error handling
-		return nil, err
-	}
+	// TODO: clean prepared statement update
 
 	return nil, nil
 }
