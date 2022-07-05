@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	util2 "github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 	stmt := dbq.INSERTStmt("products", fields, len(inserts), dbq.PostgreSQL)
 	res, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
 	if err != nil {
-		return nil, util2.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
+		return nil, internal.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
 	}
 	fmt.Println(res) // FIXME debug
 	return nil, nil
@@ -69,7 +70,7 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 	collection := models.ModelCollection{}
 	prods, ok := res.([]*models.Product)
 	if !ok {
-		return nil, util2.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
+		return nil, internal.WrapError(err, util2.ErrorStatusUnknown, err.Error(), err)
 	}
 
 	for _, item := range prods {
