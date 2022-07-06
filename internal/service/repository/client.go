@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/pkg/util"
 	_ "github.com/lib/pq"
 	"github.com/qustavo/dotsql"
 	"github.com/rocketlaunchr/dbq/v2"
@@ -35,14 +35,14 @@ func NewClient(c config.Database) (*Client, error) {
 func Initialize() *Client {
 	cl, err := NewClient(config.DBConfig)
 	if err != nil {
-		log.Fatal("failed to connect to repo: %w", err) // TODO improve error handling
+		log.Println("failed to connect to repo: %w", err) // TODO improve error handling
 	}
 
 	// run our harmless migrations
 	defer func(client *Client) {
 		err := client.CreateTables()
 		if err != nil {
-			log.Fatal(err) // TODO improve error handling
+			log.Println(err) // TODO improve error handling
 		}
 	}(cl)
 	return cl
@@ -71,7 +71,7 @@ func (c *Client) CreateTables() error {
 func (c *Client) DropTables() error {
 	dot, err := dotsql.LoadFromFile("./database/migrations/create_tables.sql") // TODO replace with config
 	if err != nil {
-		return util.WrapError(err, util.ErrorStatusNotFound, err.Error(), err)
+		return internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
 	}
 
 	_, err = dot.Exec(c.Database, "drop-uuid-extension")

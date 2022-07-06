@@ -16,7 +16,7 @@ const (
 	ErrorUnknown ErrorCode = iota
 	ErrorNotFound
 	ErrorInvalidArgument
-	ErrorInvalidAuth
+	ErrorUnauthorized
 	ErrorServerFault
 )
 
