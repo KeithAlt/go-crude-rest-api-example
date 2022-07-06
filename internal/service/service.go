@@ -52,7 +52,7 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 	}
 
 	fmt.Println("res == ", res) // debug
-
+	// TODO return newly created products ...
 	ctx.JSON(http.StatusCreated, gin.H{})
 }
 
