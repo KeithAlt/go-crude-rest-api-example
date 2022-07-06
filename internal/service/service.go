@@ -54,6 +54,7 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 }
 
 // Update updates a product
+// TODO update such that 'guid' param is not required but if is included then will update only 1 product
 func (repo *ProductRepository) Update(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	var newModelJSON models.ProductJSON

@@ -18,6 +18,7 @@ func Serve(cl *repository.Client) {
 	r.GET("/product/:guid", svc.Find)
 	r.POST("/products", svc.Create)
 	r.PUT("/product/:guid", svc.Update)
+	r.PUT("/product/", svc.Update)
 	r.DELETE("/products/:guid", svc.Delete)
 	err := r.Run(config.Domain)
 	if err != nil {
