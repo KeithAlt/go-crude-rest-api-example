@@ -16,13 +16,19 @@ type Database struct {
 }
 
 var (
-	Domain   string
-	DBConfig Database
+	Domain       string
+	Protocol     string
+	Host         string
+	DBConfig     Database
+	Hibernations string
 )
 
 // Set configures our application
 func Set() {
 	flag.StringVar(&Domain, "domain", "localhost:8080", "Define the domain for our service to be hosted on")
+	flag.StringVar(&Protocol, "protocol", "http://", "Define the protocol being used for our service (include ://)")
+	flag.StringVar(&Hibernations, "hibernations", "../database/migrations/", "Define the path of SQL hibernations")
+	Host = Protocol + Domain
 
 	// TODO replace with envvar
 	DBConfig = Database{

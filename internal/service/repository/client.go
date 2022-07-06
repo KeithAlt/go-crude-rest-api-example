@@ -35,7 +35,7 @@ func NewClient(c config.Database) (*Client, error) {
 func Initialize() *Client {
 	cl, err := NewClient(config.DBConfig)
 	if err != nil {
-		log.Println("failed to connect to repo: %w", err) // TODO improve error handling
+		log.Println(err) // TODO improve error handling
 	}
 
 	// run our harmless migrations

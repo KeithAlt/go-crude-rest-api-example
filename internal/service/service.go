@@ -2,8 +2,8 @@ package service
 
 import (
 	json2 "encoding/json"
+	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/api"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/util"
@@ -29,50 +29,53 @@ type ProductRepository struct {
 func (repo *ProductRepository) Create(ctx *gin.Context) {
 	json, err := util.SerializeJSONPayload(ctx)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
 	var jsonCollection models.ModelJSONCollection
 	err = json2.Unmarshal(json, &jsonCollection.Repo)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
 	modelCollection, err := jsonCollection.ToModel()
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
-	_, err = repo.Postgres.Create(ctx, modelCollection.Repo...)
+	res, err := repo.Postgres.Create(ctx, modelCollection)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	fmt.Println("res == ", res) // debug
+	// TODO return newly created products ...
+	ctx.JSON(http.StatusCreated, gin.H{})
 }
 
 // Update updates a product
+// TODO update such that 'guid' param is not required but if is included then will update only 1 product
 func (repo *ProductRepository) Update(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	var newModelJSON models.ProductJSON
 	if err := ctx.ShouldBindJSON(&newModelJSON); err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
 	curModel, err := repo.Postgres.Find(ctx, guid)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
 	mergedIModel := util.MergeModelsIntoInterface(curModel, &newModelJSON)
 	res, err := repo.Postgres.Update(ctx, guid, mergedIModel)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 	}
 	ctx.JSON(http.StatusOK, res.ToJSON())
 }
@@ -82,7 +85,7 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	product, err := repo.Postgres.Find(ctx, guid)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 	ctx.JSON(http.StatusOK, product.ToJSON())
@@ -92,12 +95,12 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 func (repo *ProductRepository) FindAll(ctx *gin.Context) {
 	modelCollection, err := repo.Postgres.FindAll(ctx)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 	jsonCollection, err := modelCollection.ToJSON()
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
@@ -109,7 +112,7 @@ func (repo *ProductRepository) Delete(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	err := repo.Postgres.Delete(ctx, guid)
 	if err != nil {
-		api.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 	ctx.Status(http.StatusOK)
