@@ -1,7 +1,7 @@
-package products
+package models
 
-// ProductModel defines our default model state
-type ProductModel struct {
+// Product defines our default model state
+type Product struct {
 	Name        string  `dbq:"name"`
 	Price       float32 `dbq:"price"`
 	Description string  `dbq:"description"`
@@ -11,23 +11,23 @@ type ProductModel struct {
 }
 
 // ToJSON returns a model object in JSON
-func (m *ProductModel) ToJSON() *ProductJSON {
+func (m *Product) ToJSON() *ProductJSON {
 	mod := ProductJSON(*m)
 	return &mod
 }
 
 // ProductJSON defines our model in JSON form
 type ProductJSON struct {
-	Name        string  `json:"name"`
-	Price       float32 `json:"price"`
-	Description string  `json:"description"`
+	Name        string  `json:"name,omitempty"`
+	Price       float32 `json:"price,omitempty"`
+	Description string  `json:"description,omitempty"`
 	CreatedAt   string  `json:"created_at"`
 	UpdatedAt   string  `json:"updated_at"`
 	GUID        string  `json:"guid"`
 }
 
 // ToModel returns a model object in model form
-func (m *ProductJSON) ToModel() *ProductModel {
-	mod := ProductModel(*m)
+func (m *ProductJSON) ToModel() *Product {
+	mod := Product(*m)
 	return &mod
 }

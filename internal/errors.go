@@ -1,4 +1,4 @@
-package util
+package internal
 
 import "fmt"
 
@@ -13,17 +13,19 @@ type Error struct {
 type ErrorCode uint8
 
 const (
-	ErrorStatusUnknown ErrorCode = iota
-	ErrorStatusNotFound
-	ErrorStatusInvalidArgument
+	ErrorUnknown ErrorCode = iota
+	ErrorNotFound
+	ErrorInvalidArgument
+	ErrorUnauthorized
+	ErrorServerFault
 )
 
 // WrapError wraps the error & throws up stack
-func WrapError(stacktrace error, code ErrorCode, format string, a ...interface{}) error {
+func WrapError(stacktrace error, code ErrorCode, msg string, arg ...interface{}) error {
 	return &Error{
 		code:       code,
 		stacktrace: stacktrace,
-		msg:        fmt.Sprintf(format, a...),
+		msg:        fmt.Sprintf(msg, arg...),
 	}
 }
 
@@ -33,8 +35,8 @@ func (e *Error) UnwrapError() error {
 }
 
 // NewError creates a new error
-func NewError(code ErrorCode, format string, a ...interface{}) error {
-	return WrapError(nil, code, format, a...)
+func NewError(code ErrorCode, msg string, arg ...interface{}) error {
+	return WrapError(nil, code, msg, arg...)
 }
 
 // Error returns our error message
