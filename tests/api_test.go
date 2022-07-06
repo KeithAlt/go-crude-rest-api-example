@@ -33,6 +33,16 @@ func startService() {
 	defer api.Serve(&client)
 }
 
+// checkStatusCode checks the returned status code to ensure it's what we expect it to be
+func checkStatusCode(resCode int, passCodes []int) bool {
+	for _, code := range passCodes {
+		if resCode == code {
+			return true
+		}
+	}
+	return false
+}
+
 func killService() {
 	_, err := http.Get(serviceUrl + "/kill")
 	if err != nil {
@@ -45,6 +55,12 @@ func killService() {
 // TestPost tests our HTTP PUT route response & service
 func TestPost(t *testing.T) {
 	checkService()
+	passCodes := []int{
+		http.StatusOK,
+		http.StatusAccepted,
+		http.StatusCreated,
+		http.StatusConflict,
+	}
 
 	jsonData := []byte(`{
 		"name":        "Test Product",
@@ -57,20 +73,23 @@ func TestPost(t *testing.T) {
 	if err != nil {
 		log.Println("failed to compose HTTP post request: ", err)
 		t.Fail()
+		return
 	}
 
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		t.Fail()
+		return
 	}
 
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
 
-	if res.StatusCode != http.StatusCreated && res.StatusCode != http.StatusConflict {
+	if !checkStatusCode(res.StatusCode, passCodes) {
 		t.Fail()
-		log.Fatal("the post request returned an error code: ", res.Status, "\n", string(body))
+		log.Println("the post request returned an unexpected error code: ", res.Status, "\n", string(body))
 		return
 	}
 
@@ -83,13 +102,19 @@ func TestPost(t *testing.T) {
 // TestDelete tests our HTTP PUT route response & service
 func TestDelete(t *testing.T) {
 	checkService()
-	target := "d4d3e181-4856-493d-8723-806400d488ea"
+	passCodes := []int{
+		http.StatusOK,
+		http.StatusAccepted,
+		http.StatusNoContent,
+	}
 
-	req, err := http.NewRequest("DELETE", serviceUrl+"/products")
-	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	target := "d4d3e181-4856-493d-8723-806400d488ea"
+	url := serviceUrl + "/products/" + target
+	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		log.Println("failed to compose HTTP post request: ", err)
 		t.Fail()
+		return
 	}
 
 	client := &http.Client{}
@@ -97,6 +122,14 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if !checkStatusCode(res.StatusCode, passCodes) {
+		t.Fail()
+		log.Println("service returned an unexpected HTTP status code: ", res.Status)
+		return
+	}
+
+	defer killService()
 	// TODO: DELETE http://localhost:8080/products/ab595410-2f04-4b7b-a290-29e0a3fa685d
 	// https://stackoverflow.com/questions/46310113/consume-a-delete-endpoint-from-golang
 }
