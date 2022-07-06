@@ -54,9 +54,9 @@ func Serve(cl *repository.Client) {
 
 	select {
 	case <-ctx.Done():
-		log.Println("timeout of 5 seconds.")
+		log.Println("Timing out in 5 seconds!")
 	}
-	log.Println("Server exiting")
+	log.Println("Server shutting down...")
 }
 
 // Kill ungracefully shuts down our service

@@ -2,6 +2,7 @@ package service
 
 import (
 	json2 "encoding/json"
+	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
@@ -44,13 +45,15 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
-	_, err = repo.Postgres.Create(ctx, modelCollection.Repo...)
+	res, err := repo.Postgres.Create(ctx, modelCollection)
 	if err != nil {
 		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	fmt.Println("res == ", res) // debug
+
+	ctx.JSON(http.StatusCreated, gin.H{})
 }
 
 // Update updates a product

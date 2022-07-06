@@ -15,10 +15,11 @@ var fields = []string{"name", "price", "description", "created_at", "updated_at"
 
 // Create inserts a new row into our repo
 // FIXME re-add "data interface{}" in parameter
-func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface{}, error) {
+func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*models.ModelCollection, error) {
 	// FIXME: p.Price not parsing correctly
 	var inserts []interface{}
-	for _, prod := range products {
+
+	for _, prod := range products.Repo {
 		prod.GUID = uuid2.NewString()
 		prod.CreatedAt = util2.GetTime()
 		prod.UpdatedAt = util2.GetTime()
@@ -26,12 +27,12 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 	}
 
 	stmt := dbq.INSERTStmt("products", fields, len(inserts), dbq.PostgreSQL)
-	res, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
+	_, err := dbq.E(ctx, c.Database, stmt, &c.Options, inserts)
 	if err != nil {
 		return nil, internal.WrapError(err, internal.ErrorUnknown, err.Error(), err)
 	}
-	fmt.Println(res) // debug
-	return nil, nil
+	// TODO: return the newly created products
+	return products, nil
 }
 
 // Update updates a pre-existing row by ID
