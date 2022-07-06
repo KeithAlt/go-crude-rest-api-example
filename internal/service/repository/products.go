@@ -30,7 +30,7 @@ func (c *Client) Create(ctx *gin.Context, products ...models.Product) (interface
 	if err != nil {
 		return nil, internal.WrapError(err, internal.ErrorUnknown, err.Error(), err)
 	}
-	fmt.Println(res) // FIXME debug
+	fmt.Println(res) // debug
 	return nil, nil
 }
 

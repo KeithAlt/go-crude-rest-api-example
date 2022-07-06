@@ -67,6 +67,7 @@ func (e *Error) ErrorCode() ErrorCode {
 }
 
 // ErrorResponse sends an error response to our client
+// TODO render responses should be moved to api/rest ...
 func ErrorResponse(ctx *gin.Context, msg string, internalErr ErrorCode) {
 	httpErr := http.StatusInternalServerError
 	if code, ok := httpResponses[internalErr]; ok {
@@ -79,6 +80,7 @@ func ErrorResponse(ctx *gin.Context, msg string, internalErr ErrorCode) {
 }
 
 // HandleError handles our error accordingly
+// TODO render responses should be moved to api/rest ...
 func HandleError(ctx *gin.Context, msg string, err error) {
 	// TODO implement ...
 }
