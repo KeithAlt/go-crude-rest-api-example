@@ -19,5 +19,8 @@ func Serve(cl *repository.Client) {
 	r.POST("/products", svc.Create)
 	r.PUT("/product/:guid", svc.Update)
 	r.DELETE("/products/:guid", svc.Delete)
-	log.Println(r.Run(config.Domain)) // TODO improve error handling
+	err := r.Run(config.Domain)
+	if err != nil {
+		log.Fatal(err) // TODO improve error handling
+	}
 }

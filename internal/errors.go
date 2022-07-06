@@ -1,6 +1,10 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 // Error defines our custom error type
 type Error struct {
@@ -9,9 +13,10 @@ type Error struct {
 	code       ErrorCode
 }
 
-// ErrorCode defines the types of error codes
+// ErrorCode defines our internal error type
 type ErrorCode uint8
 
+// defines our internal error codes
 const (
 	ErrorUnknown ErrorCode = iota
 	ErrorNotFound
@@ -19,6 +24,15 @@ const (
 	ErrorUnauthorized
 	ErrorServerFault
 )
+
+// httpResponses defines our HTTP error responses in the case of an internal error
+var httpResponses = map[ErrorCode]http.ConnState{
+	ErrorUnknown:         http.StatusInternalServerError,
+	ErrorNotFound:        http.StatusNotFound,
+	ErrorInvalidArgument: http.StatusBadRequest,
+	ErrorUnauthorized:    http.StatusUnauthorized,
+	ErrorServerFault:     http.StatusInternalServerError,
+}
 
 // WrapError wraps the error & throws up stack
 func WrapError(stacktrace error, code ErrorCode, msg string, arg ...interface{}) error {
@@ -50,4 +64,21 @@ func (e *Error) Error() string {
 // ErrorCode returns our error code
 func (e *Error) ErrorCode() ErrorCode {
 	return e.code
+}
+
+// ErrorResponse sends an error response to our client
+func ErrorResponse(ctx *gin.Context, msg string, internalErr ErrorCode) {
+	httpErr := http.StatusInternalServerError
+	if code, ok := httpResponses[internalErr]; ok {
+		httpErr = int(code)
+	}
+	ctx.JSON(httpErr, gin.H{
+		"msg":   msg,
+		"error": internalErr,
+	})
+}
+
+// HandleError handles our error accordingly
+func HandleError(ctx *gin.Context, msg string, err error) {
+	// TODO implement ...
 }
