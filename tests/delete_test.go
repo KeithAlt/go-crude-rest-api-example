@@ -44,12 +44,6 @@ func TestDeleteStatusCodes(t *testing.T) {
 			return
 		}
 
-		if err != nil {
-			t.Logf("delete test failed to unmarshal the expected payload:\n|_ StatusCode = %v\n|_ Response = %v\n\n|_ Error = %s", res.Status, res, err.Error())
-			t.Fail()
-			return
-		}
-
 		err = unmarshalAndDeleteProduct(res)
 		if err != nil {
 			t.Logf("delete test past but was unable to unmarshal the response payload:\n|_ StatusCode = %v\n|_ Response = %v\n\n|_ Error = %s", res.Status, res, err.Error())
@@ -64,13 +58,7 @@ func TestDeleteResponse(t *testing.T) {
 	defer func() {
 		res, err := createTestProduct()
 		if err != nil {
-			t.Log("delete test failed to compose & send a mock delete request: ", err)
-			t.Fail()
-			return
-		}
-
-		if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusAccepted {
-			t.Logf("delete test did not return the status code for a successful deletion:\n|_ StatusCode = %v\n|_ Response = %v\n", res.Status, res)
+			t.Log("delete test failed to create a test product: ", err)
 			t.Fail()
 			return
 		}
