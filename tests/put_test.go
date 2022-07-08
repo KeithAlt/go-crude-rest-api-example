@@ -14,7 +14,14 @@ var expectedPutCodes = []int{
 
 // TestPut will run all of our tests for the route
 func TestPut(t *testing.T) {
-	// TODO test all routes
+	TestPutStatusCodes(t)
+	TestPutResponse(t)
+}
+
+// TestPutInParallel will run all of our tests in parallel
+func TestPutInParallel(t *testing.T) {
+	t.Run("Test Put Code (Routine)", TestPutStatusCodes)
+	t.Run("Test Put Response (Routine)", TestPutResponse)
 }
 
 // TestPutStatusCodes tests to ensure the response code is what we expect it to be

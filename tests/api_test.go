@@ -4,10 +4,18 @@ import (
 	"testing"
 )
 
-// RunAllRouteTests tests all of our routes
-func RunAllRouteTests(t *testing.T) {
+// TestRunAll tests all of our routes
+func TestRunAll(t *testing.T) {
 	TestDelete(t)
-	TestGetAll(t)
+	TestGet(t)
 	TestPost(t)
 	TestPut(t)
+}
+
+// TestRunAllInParallel will run all of our tests in parallel
+func TestRunAllInParallel(t *testing.T) {
+	TestDeleteInParallel(t)
+	TestGetInParallel(t)
+	TestPostInParallel(t)
+	TestPutInParallel(t)
 }
