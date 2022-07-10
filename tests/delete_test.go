@@ -1,9 +1,7 @@
 package tests
 
 import (
-	"encoding/json"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	"io/ioutil"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/tests/testkit"
 	"net/http"
 	"testing"
 )
@@ -16,76 +14,46 @@ var expectedDeleteCodes = []int{
 }
 
 // TestDelete will run all of our tests for the route
-func TestDelete(t *testing.T) {
-	TestDeleteStatusCodes(t)
-	TestDeleteResponse(t)
+func TestAllDelete(t *testing.T) {
+	TestDelete(t)
 }
 
 // TestDeleteInParallel will run all of our tests in parallel
 func TestDeleteInParallel(t *testing.T) {
-	t.Run("Test Delete Code (Routine)", TestDeleteStatusCodes)
-	t.Run("Test Delete Response (Routine)", TestDeleteResponse)
+	t.Run("Test Delete Code (Routine)", TestDelete)
 }
 
-// TestDeleteStatusCodes tests to ensure the response code is what we expect it to be
-func TestDeleteStatusCodes(t *testing.T) {
-	checkService()
+// TestDelete tests to ensure the response code is what we expect it to be
+func TestDelete(t *testing.T) {
+	testkit.CheckService()
 	defer func() {
-		res, err := createTestProduct()
+		testProd, err := testkit.CreateTestProduct()
 		if err != nil {
-			t.Log("delete test failed to compose & send a mock delete request: ", err)
+			t.Log("failed to create the test product:", err)
 			t.Fail()
 			return
 		}
 
-		if !checkStatusCode(res.StatusCode, expectedDeleteCodes) {
-			t.Logf("delete test returned an illegal status code:\n|_ StatusCode = %v\n|_ Response = %v\n", res.Status, res)
+		res, err := testkit.DeleteProduct(testProd.GUID)
+		if err != nil {
+			t.Logf("delete test encountered an error while deleting the product:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res.Body, err.Error())
 			t.Fail()
 			return
 		}
 
-		err = unmarshalAndDeleteProduct(res)
-		if err != nil {
-			t.Logf("delete test past but was unable to unmarshal the response payload:\n|_ StatusCode = %v\n|_ Response = %v\n\n|_ Error = %s", res.Status, res, err.Error())
-		}
-	}()
-	defer killService()
-}
-
-// TestGetAllResponse tests to ensure the response payload is what we expect it to be
-func TestDeleteResponse(t *testing.T) {
-	checkService()
-	defer func() {
-		res, err := createTestProduct()
-		if err != nil {
-			t.Log("delete test failed to create a test product: ", err)
+		if !testkit.CheckStatusCode(res.StatusCode, expectedDeleteCodes) {
+			t.Logf("delete test did not return an expected status code:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res.Body, err.Error())
 			t.Fail()
 			return
 		}
 
-		err = unmarshalAndDeleteProduct(res)
+		// If we can unmarshal the returned JSON then we know it was removed successfully
+		_, err = testkit.UnmarshalToProduct(res)
 		if err != nil {
-			t.Logf("delete test failed to delete product by guid:\n|_ StatusCode = %v\n|_ Response = %v\n|_ Error = %s", res.Status, res, err.Error())
+			t.Logf("delete test did not return an expected JSON product payload or failed to unmarshal:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res.Body, err.Error())
 			t.Fail()
 			return
 		}
 	}()
-
-	defer killService()
-}
-
-// unmarshalAndDeleteProduct will unmarshal a response payload & delete it from our database
-func unmarshalAndDeleteProduct(res *http.Response) error {
-	var mockProduct models.ProductJSON
-	body, _ := ioutil.ReadAll(res.Body)
-	err := json.Unmarshal(body, &mockProduct)
-	if err != nil {
-		return err
-	}
-
-	_, err = deleteProduct(mockProduct.GUID)
-	if err != nil {
-		return err
-	}
-	return nil
+	defer testkit.KillService()
 }

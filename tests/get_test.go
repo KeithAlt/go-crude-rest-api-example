@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/tests/testkit"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -17,44 +18,20 @@ var expectedGetCodes = []int{
 }
 
 // TestGet will run all of our tests for the route
-func TestGet(t *testing.T) {
-	TestGetAllResponse(t)
-	TestGetAllStatusCodes(t)
-	TestGetResponse(t)
-	TestGetStatusCodes(t)
+func TestAllGet(t *testing.T) {
+	TestGetAll(t)
+	TestGet(t)
 }
 
 // TestGetInParallel will run all of our tests in parallel
 func TestGetInParallel(t *testing.T) {
-	t.Run("Test Get Code (Routine)", TestGetResponse)
-	t.Run("Test Get Response (Routine)", TestGetStatusCodes)
-	t.Run("Test Get All Code (Routine)", TestGetAllResponse)
-	t.Run("Test Get All Response (Routine)", TestGetAllResponse)
+	t.Run("Test Get All (Routine)", TestGetAll)
+	t.Run("Test Get Response (Routine)", TestGet)
 }
 
-// TestGetAllStatusCodes tests to ensure the response code is what we expect it to be
-func TestGetAllStatusCodes(t *testing.T) {
-	checkService()
-	defer func() {
-		res, err := sendGetRequest("")
-		if err != nil {
-			t.Log("get all test HTTP handshake failed: ", err)
-			t.Fail()
-			return
-		}
-
-		if !checkStatusCode(res.StatusCode, expectedGetCodes) {
-			t.Log("get all test returned an illegal status code: ", res.StatusCode)
-			t.Fail()
-			return
-		}
-	}()
-	defer killService()
-}
-
-// TestGetAllResponse tests to ensure the response payload is what we expect it to be
-func TestGetAllResponse(t *testing.T) {
-	checkService()
+// TestGetAll tests the get all method of our service
+func TestGetAll(t *testing.T) {
+	testkit.CheckService()
 	defer func() {
 		res, err := sendGetRequest("")
 		if err != nil {
@@ -65,12 +42,18 @@ func TestGetAllResponse(t *testing.T) {
 
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			t.Logf("get all test failed to read the response payload body:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
+			t.Logf("test get all failed to read the response payload body:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
 			t.Fail()
 			return
 		}
 
 		defer res.Body.Close()
+
+		if !testkit.CheckStatusCode(res.StatusCode, expectedGetCodes) {
+			t.Logf("test get all request returned an unexpected error code:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
+			t.Fail()
+			return
+		}
 
 		collection := models.ModelJSONCollection{}
 		err = json.Unmarshal(body, &collection.Repo)
@@ -86,32 +69,23 @@ func TestGetAllResponse(t *testing.T) {
 			return
 		}
 	}()
-	defer killService()
+	defer testkit.KillService()
 }
 
-// TestGetStatusCodes tests a get by id status code response
-func TestGetStatusCodes(t *testing.T) {
-	checkService()
+// TestGet tests the get method of our service
+func TestGet(t *testing.T) {
+	testkit.CheckService()
 	defer func() {
-		// TODO implement ...
-	}()
-	defer killService()
-}
-
-// TestGetResponse tests a get by id response
-func TestGetResponse(t *testing.T) {
-	checkService()
-	defer func() {
-		res, err := createTestProduct()
+		testProduct, err := testkit.CreateTestProduct()
 		if err != nil {
-			t.Logf("get test failed to create a test product:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res, err.Error())
+			t.Log("failed to create the test product: ", err)
 			t.Fail()
 			return
 		}
 
-		res, err = sendGetRequest("")
+		res, err := sendGetRequest(testProduct.GUID)
 		if err != nil {
-			t.Log("get all test HTTP handshake failed: ", err)
+			t.Log("get test HTTP handshake failed: ", err)
 			t.Fail()
 			return
 		}
@@ -125,22 +99,28 @@ func TestGetResponse(t *testing.T) {
 
 		defer res.Body.Close()
 
-		prod := models.ProductJSON{}
-		err = json.Unmarshal(body, &prod)
-		if err != nil {
-			t.Logf("get test failed to unmarshal the expected payload:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, string(body), err.Error())
+		if !testkit.CheckStatusCode(res.StatusCode, expectedGetCodes) {
+			t.Logf("get test request returned an unexpected error code:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
 			t.Fail()
 			return
 		}
 
-		// the GUID field should never be 0
-		if len(prod.GUID) <= 0 && res.StatusCode != http.StatusNoContent {
-			t.Logf("get test failed to return the expected payload or status code:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
+		var product models.ProductJSON
+		err = json.Unmarshal(body, &product)
+		if err != nil {
+			t.Logf("get test failed to unmarshal the expected payload:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
+			t.Fail()
+			return
+		}
+
+		_, err = testkit.DeleteProduct(product.GUID)
+		if err != nil {
+			t.Logf("get test passed but we failed to delete the test product:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
 			t.Fail()
 			return
 		}
 	}()
-	defer killService()
+	defer testkit.KillService()
 }
 
 // sendGetRequest sends a get request

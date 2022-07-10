@@ -16,6 +16,6 @@ func TestRunAll(t *testing.T) {
 func TestRunAllInParallel(t *testing.T) {
 	TestDeleteInParallel(t)
 	TestGetInParallel(t)
-	TestPostInParallel(t)
+	TestPostAllInParallel(t)
 	TestPutInParallel(t)
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	util2 "github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/util"
+	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/util"
 	"github.com/gin-gonic/gin"
 	uuid2 "github.com/google/uuid"
 	"github.com/rocketlaunchr/dbq/v2"
@@ -19,11 +19,11 @@ func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*mo
 	// FIXME: p.Price not parsing correctly
 	var inserts []interface{}
 
-	for _, prod := range products.Repo {
-		prod.GUID = uuid2.NewString()
-		prod.CreatedAt = util2.GetTime()
-		prod.UpdatedAt = util2.GetTime()
-		inserts = append(inserts, dbq.Struct(prod))
+	for i := 0; i < len(products.Repo); i++ {
+		products.Repo[i].GUID = uuid2.NewString()
+		products.Repo[i].CreatedAt = util.GetTime()
+		products.Repo[i].UpdatedAt = util.GetTime()
+		inserts = append(inserts, dbq.Struct(products.Repo[i]))
 	}
 
 	stmt := dbq.INSERTStmt("products", fields, len(inserts), dbq.PostgreSQL)
@@ -31,25 +31,33 @@ func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*mo
 	if err != nil {
 		return nil, internal.WrapError(err, internal.ErrorUnknown, err.Error(), err)
 	}
-	// TODO: return the newly created products
+
 	return products, nil
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id string, m []interface{}) (*models.Product, error) {
-	_, err := uuid2.Parse(id)
+func (c *Client) Update(ctx *gin.Context, id string, product *models.Product) (*models.Product, error) {
+	uuid, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
 
-	// TODO: clean prepared statement update
+	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	res, err := dbq.Qs(ctx, c.Database, findStmt, models.Product{}, nil)
+	if err != nil {
+		return nil, internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
+	}
 
+	curProduct := res.([]*models.Product)[0]
+	mergedIModel := util.MergeModelsIntoInterface(curProduct, product)
+	fmt.Println("mergedIModel == ", mergedIModel) // DEBUG
+	// TODO setup prepared statements for update query...
 	return nil, nil
 }
 
 // Find finds a product by their guid
 func (c *Client) Find(ctx *gin.Context, id string) (*models.Product, error) {
-	uuid, err := uuid2.Parse(id)
+	uuid, err := uuid2.Parse(id) // ensures our id arg is not malicious
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
 	}
@@ -82,15 +90,23 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 }
 
 // Delete deletes a product by id
-func (c *Client) Delete(ctx *gin.Context, id string) error {
-	uuid, err := uuid2.Parse(id)
+func (c *Client) Delete(ctx *gin.Context, id string) (*models.Product, error) {
+	uuid, err := uuid2.Parse(id) // ensures our id arg is not malicious
 	if err != nil {
-		return errors.New("invalid product id parameter provided")
+		return nil, errors.New("invalid product id parameter provided")
 	}
-	stmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s';", uuid)
-	_, err = dbq.Qs(ctx, c.Database, stmt, models.Product{}, nil)
+
+	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	res, err := dbq.Qs(ctx, c.Database, findStmt, models.Product{}, nil)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve product with an id of %s from repo: %w", id, err)
+		return nil, internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
 	}
-	return nil
+
+	delStmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s';", uuid)
+	_, err = dbq.Qs(ctx, c.Database, delStmt, models.Product{}, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo: %w", id, err)
+	}
+
+	return res.([]*models.Product)[0], nil
 }
