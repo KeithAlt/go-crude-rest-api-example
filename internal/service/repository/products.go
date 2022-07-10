@@ -36,7 +36,7 @@ func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*mo
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id string, product *models.Product) (*models.Product, error) {
+func (c *Client) Update(ctx *gin.Context, id string, newProduct *models.Product) (*models.Product, error) {
 	uuid, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
@@ -49,10 +49,12 @@ func (c *Client) Update(ctx *gin.Context, id string, product *models.Product) (*
 	}
 
 	curProduct := res.([]*models.Product)[0]
-	mergedIModel := util.MergeModelsIntoInterface(curProduct, product)
-	fmt.Println("mergedIModel == ", mergedIModel) // DEBUG
-	// TODO setup prepared statements for update query...
-	return nil, nil
+	mergedModel := util.MergeProductModels(newProduct, curProduct)
+	updateStmt := fmt.Sprintf("UPDATE products SET name = $1, price = $2, description = $3, created_at = $4, updated_at = $5, guid = $6 WHERE guid = '%s'", curProduct.GUID)
+	results := dbq.MustQ(ctx, c.Database, updateStmt, &c.Options, dbq.Struct(mergedModel))
+	fmt.Println("results == ", results) // DEBUG
+	// TODO check if results is an error
+	return mergedModel, nil
 }
 
 // Find finds a product by their guid

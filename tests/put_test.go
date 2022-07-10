@@ -26,23 +26,23 @@ func TestAllPut(t *testing.T) {
 
 // TestPutInParallel will run all of our tests in parallel
 func TestPutInParallel(t *testing.T) {
-	t.Run("Test Put Code", TestPut)
+	t.Run("TEST PUT Routine", TestPut)
 }
 
 // TestPut tests to ensure the response code is what we expect it to be
 func TestPut(t *testing.T) {
 	testkit.CheckService()
-	defer func() {
+	defer func() error {
 		testProd, err := testkit.CreateTestProduct()
 		if err != nil {
 			t.Log("failed to create the test product:", err)
 			t.Fail()
-			return
+			return err
 		}
 
 		// Product data we intend to update to the pre-existing product
 		newProductName := uuid2.NewString()
-		newProductDesc := uuid2.NewString()
+		newProductDesc := "This is an updated description"
 		updatedProduct := models.ProductJSON{
 			Name:        newProductName,
 			Description: newProductDesc,
@@ -52,13 +52,14 @@ func TestPut(t *testing.T) {
 		if err != nil {
 			t.Logf("test put failed to send the request:\n- StatusCode = %v\n- Response = %v\n", res.Status, res.Body)
 			t.Fail()
-			return
+			return err
 		}
 
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			t.Logf("test put failed to read the response body:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
 			t.Fail()
+			return err
 		}
 
 		defer res.Body.Close()
@@ -66,7 +67,7 @@ func TestPut(t *testing.T) {
 		if !testkit.CheckStatusCode(res.StatusCode, expectedPutCodes) {
 			t.Logf("test put request returned an unexpected error code:\n- StatusCode = %v\n- Response = %v\n", res.Status, string(body))
 			t.Fail()
-			return
+			return err
 		}
 
 		var product models.ProductJSON
@@ -74,21 +75,22 @@ func TestPut(t *testing.T) {
 		if err != nil {
 			t.Logf("test put failed to unmarshal the response payload:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, string(body), err.Error())
 			t.Fail()
-			return
+			return err
 		}
 
-		if product.Name != newProductName || product.Name != newProductDesc {
+		if product.Name != newProductName || product.Description != newProductDesc {
 			t.Logf("test put failed to update data:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res.Body, err.Error())
 			t.Fail()
-			return
+			return err
 		}
 
 		res, err = testkit.DeleteProduct(testProd.GUID)
 		if err != nil {
 			t.Logf("test put encountered an error while deleting the product:\n- StatusCode = %v\n- Response = %v\n- Error = %s", res.Status, res.Body, err.Error())
 			t.Fail()
-			return
+			return err
 		}
+		return nil
 	}()
 	defer testkit.KillService()
 }

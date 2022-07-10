@@ -70,7 +70,6 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 }
 
 // Update updates a product
-// TODO update such that 'guid' param is not required but if is included then will update only 1 product
 func (repo *ProductRepository) Update(ctx *gin.Context) {
 	guid := ctx.Param("guid")
 	var newModelJSON models.ProductJSON
@@ -82,7 +81,8 @@ func (repo *ProductRepository) Update(ctx *gin.Context) {
 	if err != nil {
 		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 	}
-	ctx.JSON(http.StatusOK, res.ToJSON())
+
+	ctx.JSON(http.StatusOK, *res.ToJSON())
 }
 
 // Find returns a product by ID

@@ -25,8 +25,8 @@ func Serve(cl *repository.Client) {
 	router.GET("/products", svc.FindAll)
 	router.GET("/products/:guid", svc.Find)
 	router.POST("/products", svc.Create)
-	router.PUT("/product/:guid", svc.Update)
-	router.PUT("/product/", svc.Update)
+	router.PUT("/products/:guid", svc.Update)
+	router.PUT("/products/", svc.Update)
 	router.DELETE("/products/:guid", svc.Delete)
 	router.GET("/kill", Kill) // <- TODO add HEAVY auth
 

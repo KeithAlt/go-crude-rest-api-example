@@ -62,14 +62,14 @@ func (c *Client) CreateTables() error {
 
 	_, err = dot.Exec(c.Database, "create-products-table")
 	if err != nil {
-		return fmt.Errorf("failed to execute create tables migration: %w", err)
+		return fmt.Errorf("failed to execute create tables migration: %w", err) // TODO better error handling
 	}
 	return nil
 }
 
 // DropTables will run 'drop if not exist' statement migrations with use of dotsql
 func (c *Client) DropTables() error {
-	dot, err := dotsql.LoadFromFile("./database/migrations/create_tables.sql") // TODO replace with config
+	dot, err := dotsql.LoadFromFile("./database/migrations/drop_tables.sql") // TODO replace with config
 	if err != nil {
 		return internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
 	}
