@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// MergeModelsIntoInterface takes a target model & merges it with a JSON model values
-// XXX This works but the reflection pkg is notoriously slow. We can do better!
+// MergeModelsIntoInterface takes a target model & merges it with a JSON model interface vars (slowly...)
+// TODO remove by 7/22/2022 if marked as unused by IDE. If you're reading this & it's past that date, do it!
 func MergeModelsIntoInterface(curModel *models.Product, newModel *models.Product) []interface{} {
 	curValue := reflect.ValueOf(curModel)
 	newValue := reflect.ValueOf(newModel)
@@ -28,7 +28,6 @@ func IsDuplicateKeyError(err error) bool {
 }
 
 // MergeProductModels merges product models overriding new values of null with current product data
-// XXX this works but can likely be done much faster with the use of prepared statements in dotSQL
 func MergeProductModels(newModel *models.Product, curModel *models.Product) *models.Product {
 	mergedProduct := models.Product{
 		Name:        getValidFieldByString(newModel.Name, curModel.Name),

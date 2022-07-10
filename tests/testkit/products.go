@@ -89,7 +89,7 @@ func CreateTestProductCollection() (*models.ModelJSONCollection, error) {
 	return &testProducts, nil
 }
 
-// DeleteProduct will delete the product by it's guid
+// DeleteProduct will delete the product by its guid
 func DeleteProduct(guid string) (*http.Response, error) {
 	url := config.Host + "/products/" + guid
 	req, err := http.NewRequest("DELETE", url, nil)
