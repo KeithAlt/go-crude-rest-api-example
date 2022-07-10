@@ -23,7 +23,7 @@ func Serve(cl *repository.Client) {
 
 	router := gin.Default()
 	router.GET("/products", svc.FindAll)
-	router.GET("/product/:guid", svc.Find)
+	router.GET("/products/:guid", svc.Find)
 	router.POST("/products", svc.Create)
 	router.PUT("/product/:guid", svc.Update)
 	router.PUT("/product/", svc.Update)
