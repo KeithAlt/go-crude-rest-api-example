@@ -135,6 +135,7 @@ func sendPostCollectionRequest() (*http.Response, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +159,7 @@ func sendPostRequest() (*http.Response, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}

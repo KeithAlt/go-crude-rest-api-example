@@ -101,6 +101,7 @@ func sendPutRequest(id string, newProduct *models.ProductJSON) (*http.Response, 
 	jsonData, _ = json.Marshal(newProduct)
 	req, err := http.NewRequest("PUT", config.Host+"/products/"+id, bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}

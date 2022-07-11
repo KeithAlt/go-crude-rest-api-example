@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 // Product defines our default model state
 type Product struct {
 	Name        string  `dbq:"name"`
@@ -30,4 +32,10 @@ type ProductJSON struct {
 func (m *ProductJSON) ToModel() *Product {
 	mod := Product(*m)
 	return &mod
+}
+
+// Marshal casts our JSON struct to bytes
+func (m *ProductJSON) Marshal() *[]byte {
+	jsonBytes, _ := json.Marshal(m)
+	return &jsonBytes
 }

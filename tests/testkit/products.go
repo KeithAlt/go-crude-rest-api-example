@@ -21,6 +21,7 @@ func CreateTestProduct() (*models.ProductJSON, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +64,7 @@ func CreateTestProductCollection() (*models.ModelJSONCollection, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +95,7 @@ func CreateTestProductCollection() (*models.ModelJSONCollection, error) {
 func DeleteProduct(guid string) (*http.Response, error) {
 	url := config.Host + "/products/" + guid
 	req, err := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
