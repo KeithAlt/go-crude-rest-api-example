@@ -1,7 +1,7 @@
 package service
 
 import (
-	json2 "encoding/json"
+	json2 "encoding/json" // FIXME
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
@@ -66,7 +66,7 @@ func (repo *ProductRepository) Create(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, jsonProducts.Repo)
+	defer ctx.JSON(http.StatusCreated, jsonProducts.Repo)
 }
 
 // Update updates a product
@@ -82,7 +82,7 @@ func (repo *ProductRepository) Update(ctx *gin.Context) {
 		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 	}
 
-	ctx.JSON(http.StatusOK, *res.ToJSON())
+	defer ctx.JSON(http.StatusOK, *res.ToJSON())
 }
 
 // Find returns a product by ID
@@ -94,7 +94,7 @@ func (repo *ProductRepository) Find(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product.ToJSON())
+	defer ctx.JSON(http.StatusOK, product.ToJSON())
 }
 
 // FindAll returns all service
@@ -121,5 +121,5 @@ func (repo *ProductRepository) Delete(ctx *gin.Context) {
 		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
-	ctx.JSON(http.StatusOK, product.ToJSON())
+	defer ctx.JSON(http.StatusOK, product.ToJSON())
 }
