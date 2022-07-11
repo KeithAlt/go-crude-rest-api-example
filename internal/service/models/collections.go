@@ -1,9 +1,5 @@
 package models
 
-import (
-	"encoding/json"
-)
-
 // ModelCollection defines a collection of models
 type ModelCollection struct {
 	Repo []Product
@@ -36,19 +32,4 @@ func (c *ModelJSONCollection) ToModel() *ModelCollection {
 		collection.Repo = append(collection.Repo, *m.ToModel())
 	}
 	return &collection
-}
-
-// Marshal sets our collection of products JSON to bytes
-func (c *ModelJSONCollection) Marshal() *[]byte {
-	var byteCollection []byte
-	byteCollection = append(byteCollection, []byte("[")...)
-	for k, p := range c.Repo {
-		bytes, _ := json.Marshal(p)
-		if k != len(c.Repo)-1 {
-			bytes = append(bytes, []byte(",")...)
-		}
-		byteCollection = append(byteCollection, bytes...)
-	}
-	byteCollection = append(byteCollection, []byte("]")...)
-	return &byteCollection
 }

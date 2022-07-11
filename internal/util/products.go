@@ -2,25 +2,8 @@ package util
 
 import (
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
-	"reflect"
 	"strings"
 )
-
-// MergeModelsIntoInterface takes a target model & merges it with a JSON model interface vars (slowly...)
-// TODO remove by 7/22/2022 if marked as unused by IDE. If you're reading this & it's past that date, do it!
-func MergeModelsIntoInterface(curModel *models.Product, newModel *models.Product) []interface{} {
-	curValue := reflect.ValueOf(curModel)
-	newValue := reflect.ValueOf(newModel)
-	newModelValues := make([]interface{}, newValue.NumField())
-	for i := 0; i < curValue.NumField(); i++ {
-		if newValue.Field(i).Interface() == "" {
-			newModelValues[i] = curValue.Field(i).Interface()
-		} else {
-			newModelValues[i] = newValue.Field(i).Interface()
-		}
-	}
-	return newModelValues
-}
 
 // IsDuplicateKeyError returns if a returned error is due to a duplicate key constraint conflict
 func IsDuplicateKeyError(err error) bool {
