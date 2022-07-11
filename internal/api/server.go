@@ -16,17 +16,17 @@ import (
 
 // Serve begins serving our resources
 // TODO this function can be split into smaller functions
-func Serve(cl *repository.Client) {
-	svc := &Handler{
-		Repo: &service.ProductRepository{Postgres: cl},
+func Serve(db *repository.Client) {
+	svc := &service.Products{
+		Repo: db,
 	}
 
 	router := gin.Default()
 	router.GET("/products", svc.FindAll)
-	router.GET("/products/:guid", svc.Find)
+	router.GET("/product/:guid", svc.Find)
 	router.POST("/products", svc.Create)
-	router.PUT("/product/:guid", svc.Update)
-	router.PUT("/product/", svc.Update)
+	router.PUT("/products/:guid", svc.Update)
+	router.PUT("/products/", svc.Update)
 	router.DELETE("/products/:guid", svc.Delete)
 	router.GET("/kill", Kill) // <- TODO add HEAVY auth
 

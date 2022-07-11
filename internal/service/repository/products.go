@@ -14,9 +14,8 @@ import (
 var fields = []string{"name", "price", "description", "created_at", "updated_at", "guid"}
 
 // Create inserts a new row into our repo
-// FIXME re-add "data interface{}" in parameter
+// FIXME: Price not parsing correctly to f32
 func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*models.ModelCollection, error) {
-	// FIXME: p.Price not parsing correctly
 	var inserts []interface{}
 
 	for i := 0; i < len(products.Repo); i++ {
@@ -36,7 +35,8 @@ func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*mo
 }
 
 // Update updates a pre-existing row by ID
-func (c *Client) Update(ctx *gin.Context, id string, product *models.Product) (*models.Product, error) {
+// FIXME: Price not parsing correctly to f32
+func (c *Client) Update(ctx *gin.Context, id string, newProduct *models.Product) (*models.Product, error) {
 	uuid, err := uuid2.Parse(id)
 	if err != nil {
 		return nil, errors.New("invalid product id parameter provided")
@@ -49,10 +49,10 @@ func (c *Client) Update(ctx *gin.Context, id string, product *models.Product) (*
 	}
 
 	curProduct := res.([]*models.Product)[0]
-	mergedIModel := util.MergeModelsIntoInterface(curProduct, product)
-	fmt.Println("mergedIModel == ", mergedIModel) // DEBUG
-	// TODO setup prepared statements for update query...
-	return nil, nil
+	mergedModel := util.MergeProductModels(newProduct, curProduct)
+	updateStmt := fmt.Sprintf("UPDATE products SET name = $1, price = $2, description = $3, created_at = $4, updated_at = $5, guid = $6 WHERE guid = '%s'", curProduct.GUID)
+	_ = dbq.MustQ(ctx, c.Database, updateStmt, &c.Options, dbq.Struct(mergedModel))
+	return mergedModel, nil
 }
 
 // Find finds a product by their guid

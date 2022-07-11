@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
@@ -25,17 +26,17 @@ func TestAllGet(t *testing.T) {
 
 // TestGetInParallel will run all of our tests in parallel
 func TestGetInParallel(t *testing.T) {
-	t.Run("Test Get All (Routine)", TestGetAll)
-	t.Run("Test Get Response (Routine)", TestGet)
+	t.Run("TEST GET all Routine", TestGetAll)
+	t.Run("TEST GET Routine", TestGet)
 }
 
 // TestGetAll tests the get all method of our service
 func TestGetAll(t *testing.T) {
 	testkit.CheckService()
 	defer func() {
-		res, err := sendGetRequest("")
+		res, err := sendGetRequest("/products")
 		if err != nil {
-			t.Log("get all test HTTP handshake failed: ", err)
+			t.Log("get test HTTP handshake failed: ", err)
 			t.Fail()
 			return
 		}
@@ -69,6 +70,7 @@ func TestGetAll(t *testing.T) {
 			return
 		}
 	}()
+
 	defer testkit.KillService()
 }
 
@@ -77,13 +79,13 @@ func TestGet(t *testing.T) {
 	testkit.CheckService()
 	defer func() {
 		testProduct, err := testkit.CreateTestProduct()
-		if err != nil {
-			t.Log("failed to create the test product: ", err)
+		if err != nil || testProduct.GUID == "" {
+			t.Log("failed to create the test product: ", err, testProduct)
 			t.Fail()
 			return
 		}
 
-		res, err := sendGetRequest(testProduct.GUID)
+		res, err := sendGetRequest("/product/" + testProduct.GUID)
 		if err != nil {
 			t.Log("get test HTTP handshake failed: ", err)
 			t.Fail()
@@ -123,14 +125,19 @@ func TestGet(t *testing.T) {
 	defer testkit.KillService()
 }
 
-// sendGetRequest sends a get request
+// sendGetRequest sends a get request with required auth
 func sendGetRequest(arg string) (*http.Response, error) {
-	if arg != "" {
-		arg = "/" + arg
-	}
-	res, err := http.Get(config.Host + "/products" + arg)
+	var jsonResponse []byte
+	req, err := http.NewRequest("GET", config.Host+arg, bytes.NewBuffer(jsonResponse))
 	if err != nil {
 		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return res, err
 	}
 	return res, nil
 }

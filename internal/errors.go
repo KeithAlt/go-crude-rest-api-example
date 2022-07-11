@@ -23,6 +23,7 @@ const (
 	ErrorInvalidArgument
 	ErrorUnauthorized
 	ErrorServerFault
+	ErrorConflict
 )
 
 // httpResponses defines our HTTP error responses in the case of an internal error
@@ -32,6 +33,7 @@ var httpResponses = map[ErrorCode]http.ConnState{
 	ErrorInvalidArgument: http.StatusBadRequest,
 	ErrorUnauthorized:    http.StatusUnauthorized,
 	ErrorServerFault:     http.StatusInternalServerError,
+	ErrorConflict:        http.StatusConflict,
 }
 
 // WrapError wraps the error & throws up stack

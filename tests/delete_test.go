@@ -20,7 +20,7 @@ func TestAllDelete(t *testing.T) {
 
 // TestDeleteInParallel will run all of our tests in parallel
 func TestDeleteInParallel(t *testing.T) {
-	t.Run("Test Delete Code (Routine)", TestDelete)
+	t.Run("TEST DELETE Routine", TestDelete)
 }
 
 // TestDelete tests to ensure the response code is what we expect it to be

@@ -1,24 +1,20 @@
 package models
 
-import (
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
-)
-
 // ModelCollection defines a collection of models
 type ModelCollection struct {
 	Repo []Product
 }
 
-// ToModel returns a collection of models in JSON form
-func (c *ModelJSONCollection) ToModel() (*ModelCollection, error) {
+// ToJSON returns a collection of models in JSON form
+func (c *ModelCollection) ToJSON() *ModelJSONCollection {
 	if len(c.Repo) == 0 {
-		return nil, internal.NewError(internal.ErrorInvalidArgument, "cannot convert empty JSON collection", nil)
+		return nil
 	}
-	var collection ModelCollection
-	for _, m := range c.Repo {
-		collection.Repo = append(collection.Repo, *m.ToModel())
+	var collection ModelJSONCollection
+	for _, val := range c.Repo {
+		collection.Repo = append(collection.Repo, *val.ToJSON())
 	}
-	return &collection, nil
+	return &collection
 }
 
 // ModelJSONCollection defines a model collection in JSON form
@@ -26,14 +22,14 @@ type ModelJSONCollection struct {
 	Repo []ProductJSON
 }
 
-// ToJSON returns a collection of models in JSON form
-func (c *ModelCollection) ToJSON() (*ModelJSONCollection, error) {
+// ToModel returns a collection of models in JSON form
+func (c *ModelJSONCollection) ToModel() *ModelCollection {
 	if len(c.Repo) == 0 {
-		return nil, internal.NewError(internal.ErrorInvalidArgument, "cannot convert empty model collection", nil)
+		return nil
 	}
-	var collection ModelJSONCollection
-	for _, val := range c.Repo {
-		collection.Repo = append(collection.Repo, *val.ToJSON())
+	var collection ModelCollection
+	for _, m := range c.Repo {
+		collection.Repo = append(collection.Repo, *m.ToModel())
 	}
-	return &collection, nil
+	return &collection
 }

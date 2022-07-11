@@ -28,8 +28,8 @@ func TestPostAll(t *testing.T) {
 
 // TestPostAllInParallel will run all of our tests in parallel
 func TestPostAllInParallel(t *testing.T) {
-	t.Run("Test Post (Routine)", TestPost)
-	t.Run("Test Post Collection (Routine)", TestPostCollection)
+	t.Run("TEST POST Routine", TestPost)
+	t.Run("TEST POST Collection Routine", TestPostCollection)
 }
 
 // TestPost tests the post method to ensure it returns what we expect it to
@@ -135,6 +135,7 @@ func sendPostCollectionRequest() (*http.Response, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +159,7 @@ func sendPostRequest() (*http.Response, error) {
 
 	req, err := http.NewRequest("POST", config.Host+"/products", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json;	charset=UTF-8")
+	req.Header.Set("Secret", config.Secret)
 	if err != nil {
 		return nil, err
 	}
