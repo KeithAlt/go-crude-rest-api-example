@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"github.com/KeithAlt/go-crude-rest-api-boilerplate/config"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/repository"
 	"github.com/gin-gonic/gin"
@@ -15,28 +14,12 @@ import (
 )
 
 // Serve begins serving our resources
-// TODO this function can be split into smaller functions
 func Serve(db *repository.Client) {
-	svc := &service.Products{
-		Repo: db,
-	}
-
-	router := gin.Default()
-	router.GET("/products", svc.FindAll)
-	router.GET("/product/:guid", svc.Find)
-	router.POST("/products", svc.Create)
-	router.PUT("/products/:guid", svc.Update)
-	router.PUT("/products/", svc.Update)
-	router.DELETE("/products/:guid", svc.Delete)
-	router.GET("/kill", Kill) // <- TODO add HEAVY auth
-
-	srv := &http.Server{
-		Addr:    config.Domain,
-		Handler: router,
-	}
+	router := createRouter(db)
+	server := createHTTPServer(router)
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Listen: %s\n", err)
 		}
 	}()
@@ -48,7 +31,7 @@ func Serve(db *repository.Client) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
 
@@ -62,4 +45,21 @@ func Serve(db *repository.Client) {
 // Kill ungracefully shuts down our service
 func Kill(ctx *gin.Context) {
 	signal.NotifyContext(ctx, os.Interrupt)
+}
+
+// createRouter creates our routes & router
+func createRouter(db *repository.Client) *gin.Engine {
+	svc := &service.Products{
+		Repo: db,
+	}
+
+	router := gin.Default()
+	router.GET("/products", svc.FindAll)
+	router.GET("/product/:guid", svc.Find)
+	router.POST("/products", svc.Create)
+	router.PUT("/products/:guid", svc.Update)
+	router.PUT("/products/", svc.Update)
+	router.DELETE("/products/:guid", svc.Delete)
+	router.GET("/kill", Kill) // <- TODO add HEAVY auth
+	return router
 }

@@ -18,11 +18,6 @@ func TestAllDelete(t *testing.T) {
 	TestDelete(t)
 }
 
-// TestDeleteInParallel will run all of our tests in parallel
-func TestDeleteInParallel(t *testing.T) {
-	t.Run("TEST DELETE Routine", TestDelete)
-}
-
 // TestDelete tests to ensure the response code is what we expect it to be
 func TestDelete(t *testing.T) {
 	testkit.CheckService()

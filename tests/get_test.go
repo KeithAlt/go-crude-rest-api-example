@@ -24,12 +24,6 @@ func TestAllGet(t *testing.T) {
 	TestGet(t)
 }
 
-// TestGetInParallel will run all of our tests in parallel
-func TestGetInParallel(t *testing.T) {
-	t.Run("TEST GET all Routine", TestGetAll)
-	t.Run("TEST GET Routine", TestGet)
-}
-
 // TestGetAll tests the get all method of our service
 func TestGetAll(t *testing.T) {
 	testkit.CheckService()
