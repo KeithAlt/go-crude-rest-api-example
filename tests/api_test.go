@@ -11,11 +11,3 @@ func TestRunAll(t *testing.T) {
 	TestPost(t)
 	TestPut(t)
 }
-
-// TestRunAllInParallel will run all of our tests in parallel
-func TestRunAllInParallel(t *testing.T) {
-	TestDeleteInParallel(t)
-	TestGetInParallel(t)
-	TestPostAllInParallel(t)
-	TestPutInParallel(t)
-}

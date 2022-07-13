@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"fmt"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal"
 	"github.com/KeithAlt/go-crude-rest-api-boilerplate/internal/service/models"
@@ -37,12 +36,7 @@ func (c *Client) Create(ctx *gin.Context, products *models.ModelCollection) (*mo
 // Update updates a pre-existing row by ID
 // FIXME: Price not parsing correctly to f32
 func (c *Client) Update(ctx *gin.Context, id string, newProduct *models.Product) (*models.Product, error) {
-	uuid, err := uuid2.Parse(id)
-	if err != nil {
-		return nil, errors.New("invalid product id parameter provided")
-	}
-
-	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", id)
 	res, err := dbq.Qs(ctx, c.Database, findStmt, models.Product{}, nil)
 	if err != nil {
 		return nil, internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
@@ -57,11 +51,7 @@ func (c *Client) Update(ctx *gin.Context, id string, newProduct *models.Product)
 
 // Find finds a product by their guid
 func (c *Client) Find(ctx *gin.Context, id string) (*models.Product, error) {
-	uuid, err := uuid2.Parse(id) // ensures our id arg is not malicious
-	if err != nil {
-		return nil, errors.New("invalid product id parameter provided")
-	}
-	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid.String())
+	stmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", id)
 	res, err := dbq.Qs(ctx, c.Database, stmt, models.Product{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo", id)
@@ -91,18 +81,13 @@ func (c *Client) FindAll(ctx *gin.Context) (*models.ModelCollection, error) {
 
 // Delete deletes a product by id
 func (c *Client) Delete(ctx *gin.Context, id string) (*models.Product, error) {
-	uuid, err := uuid2.Parse(id) // ensures our id arg is not malicious
-	if err != nil {
-		return nil, errors.New("invalid product id parameter provided")
-	}
-
-	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", uuid)
+	findStmt := fmt.Sprintf("SELECT * FROM products WHERE guid='%s' LIMIT 1;", id)
 	res, err := dbq.Qs(ctx, c.Database, findStmt, models.Product{}, nil)
 	if err != nil {
 		return nil, internal.WrapError(err, internal.ErrorNotFound, err.Error(), err)
 	}
 
-	delStmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s';", uuid)
+	delStmt := fmt.Sprintf("DELETE FROM products WHERE guid='%s';", id)
 	_, err = dbq.Qs(ctx, c.Database, delStmt, models.Product{}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve product with an id of %s from repo: %w", id, err)

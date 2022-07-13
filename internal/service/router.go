@@ -80,7 +80,7 @@ func (svc *Products) Update(ctx *gin.Context) {
 		return
 	}
 
-	defer ctx.JSON(http.StatusOK, product.ToJSON())
+	defer ctx.JSON(http.StatusOK, *product.ToJSON())
 }
 
 // Find returns a product by ID
@@ -138,8 +138,9 @@ func (svc *Products) Delete(ctx *gin.Context) {
 
 	product, err := svc.Repo.Delete(ctx, guid.String())
 	if err != nil {
+		internal.ErrorResponse(ctx, err.Error(), internal.ErrorServerFault)
 		return
 	}
 
-	defer ctx.JSON(http.StatusOK, product.ToJSON())
+	defer ctx.JSON(http.StatusOK, *product.ToJSON())
 }
