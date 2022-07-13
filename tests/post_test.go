@@ -26,12 +26,6 @@ func TestPostAll(t *testing.T) {
 	TestPostCollection(t)
 }
 
-// TestPostAllInParallel will run all of our tests in parallel
-func TestPostAllInParallel(t *testing.T) {
-	t.Run("TEST POST Routine", TestPost)
-	t.Run("TEST POST Collection Routine", TestPostCollection)
-}
-
 // TestPost tests the post method to ensure it returns what we expect it to
 func TestPost(t *testing.T) {
 	testkit.CheckService()

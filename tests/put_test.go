@@ -24,11 +24,6 @@ func TestAllPut(t *testing.T) {
 	TestPut(t)
 }
 
-// TestPutInParallel will run all of our tests in parallel
-func TestPutInParallel(t *testing.T) {
-	t.Run("TEST PUT Routine", TestPut)
-}
-
 // TestPut tests to ensure the response code is what we expect it to be
 func TestPut(t *testing.T) {
 	testkit.CheckService()
