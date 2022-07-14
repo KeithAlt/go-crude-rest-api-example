@@ -1,5 +1,7 @@
 package config
 
+import "os"
+
 // XXX All configs are pending gotdotenv implementation
 
 // Database is our repo configuration for establishing our connection
@@ -16,12 +18,12 @@ type Database struct {
 // setDBConfig sets our database config
 func setDBConfig() {
 	DBConfig = Database{
-		User:    "postgres",
-		Pass:    "postgres",
-		Host:    "localhost",
-		Port:    "5432",
-		DbName:  "",
-		DbType:  "postgres",
-		SSLMode: "disable",
+		User:    os.Getenv("DATABASE_USERNAME"),
+		Pass:    os.Getenv("DATABASE_PASSWORD"),
+		Host:    os.Getenv("DATABASE_HOST"),
+		Port:    os.Getenv("DATABASE_PORT"),
+		DbName:  os.Getenv("DATABASE_NAME"),
+		DbType:  os.Getenv("DATABASE_TYPE"),
+		SSLMode: os.Getenv("DATABASE_SSLMODE"),
 	}
 }
