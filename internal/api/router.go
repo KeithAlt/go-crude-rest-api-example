@@ -42,11 +42,6 @@ func Serve(db *repository.Client) {
 	log.Println("Server shutting down...")
 }
 
-// Kill ungracefully shuts down our service
-func Kill(ctx *gin.Context) {
-	signal.NotifyContext(ctx, os.Interrupt)
-}
-
 // createRouter creates our routes & router
 func createRouter(db *repository.Client) *gin.Engine {
 	svc := &service.Products{
@@ -62,4 +57,9 @@ func createRouter(db *repository.Client) *gin.Engine {
 	router.DELETE("/products/:guid", svc.Delete)
 	router.GET("/kill", Kill) // <- TODO add HEAVY auth
 	return router
+}
+
+// Kill ungracefully shuts down our service
+func Kill(ctx *gin.Context) {
+	signal.NotifyContext(ctx, os.Interrupt)
 }

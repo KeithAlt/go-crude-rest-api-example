@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-// XXX All configs are pending gotdotenv implementation
-
 // HTTPServer defines our configuration for the HTTP server
 type HTTPServer struct {
 	Addr           string `binding:"required"`
